@@ -22,14 +22,14 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Navbar */
+/* Navigation Layout */
 .navbar {
     background-color: var(--dark-primary);
     border-bottom: 1px solid #1e293b;
     padding: 1rem 2rem;
 }
 .nav-container {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     justify-content: flex-end;
@@ -49,14 +49,14 @@ body {
 .contact-link:hover { color: var(--sky-blue); }
 .contact-item { font-size: 0.88rem; color: #64748b; }
 
-/* Hero Summary */
+/* Executive Biography Hero */
 .hero {
     background-color: var(--dark-primary);
     color: white;
-    padding: 4.5rem 2rem 3.5rem 2rem;
+    padding: 4.5rem 2rem;
     border-bottom: 1px solid #1e293b;
 }
-.hero-container { max-width: 1100px; margin: 0 auto; }
+.hero-container { max-width: 1200px; margin: 0 auto; }
 .hero-main-info { display: flex; align-items: center; gap: 2.5rem; margin-bottom: 2rem; }
 .profile-pic { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #1e293b; }
 .hero-title-block h1 { font-size: 2.75rem; font-weight: 800; letter-spacing: -0.04em; margin-bottom: 0.25rem; }
@@ -67,53 +67,141 @@ body {
 .btn-linkedin:hover { background: #0284c7; color: white; }
 .elevated-bio { font-size: 1.1rem; color: #cbd5e1; text-align: justify; font-weight: 300; }
 
-/* Layout Base Container */
+/* Dashboard Columns Architecture: Experience Focus vs. Metadata Sidebar */
 .container {
-    max-width: 1100px;
-    margin: 2.5rem auto 5rem auto;
+    max-width: 1200px;
+    margin: 3.5rem auto;
     padding: 0 1.5rem;
     display: flex;
+    gap: 2.5rem;
+    align-items: flex-start;
+}
+.main-content {
+    flex: 2.3; /* Premium Wide space for Core Work Experience focus */
+    min-width: 320px;
+}
+.sidebar {
+    flex: 1; /* Locked side data profile track */
+    min-width: 320px;
+    display: flex;
     flex-direction: column;
-    gap: 3.5rem;
+    gap: 1.5rem;
 }
 
-/* EXECUTIVE HUB MATRIX STYLING (Top Grid) */
-.executive-hub-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
-    width: 100%;
-}
-.hub-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.75rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-}
-.hub-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    color: var(--text-main);
-    border-bottom: 2px solid var(--bg-main);
-    padding-bottom: 0.75rem;
-    margin-bottom: 1.25rem;
-}
-.hub-item {
+/* Sections Global Layout */
+.section-block { width: 100%; }
+.section-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; text-transform: uppercase; color: var(--text-main); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.6rem; margin-bottom: 1.75rem; }
+
+/* Modern Layout Rows: Logos, Titles & Dates Inline Flexbox Alignment Engine */
+.timeline { display: flex; flex-direction: column; gap: 1.5rem; }
+.timeline-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01); }
+.card-header-line {
     display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    margin-bottom: 1rem;
+    justify-content: space-between;
+    align-items: center; /* Vertical Center */
+    width: 100%;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed var(--border-color);
 }
-.hub-item:last-of-type { margin-bottom: 0; }
-.hub-tag {
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    min-width: 52px;
-    text-align: center;
+.company-brand-block {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem; /* Space between logo asset and role labels */
 }
-.badge-c
+.logo-wrapper { text-decoration: none; display: inline-flex; transition: transform 0.2s ease; }
+.logo-wrapper:hover { transform: scale(1.06); }
+.logo-wrapper-static { display: inline-flex; }
+
+/* Official Enterprise High-Resolution Clearbit Corporate Branding Assets Configuration */
+.company-avatar { 
+    width: 46px; 
+    height: 46px; 
+    border-radius: 8px; 
+    object-fit: contain; 
+    background-color: white; 
+    padding: 4px; 
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.company-avatar.grayscale { filter: grayscale(100%); opacity: 0.45; }
+
+/* Inline Corporate Role Typography */
+.title-meta h4 { font-size: 1.2rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; line-height: 1.2; }
+.company-subname { font-size: 0.9rem; color: var(--text-muted); display: block; margin-top: 0.15rem; }
+
+/* Right Aligned Metadata Badges */
+.badge-date { 
+    font-size: 0.82rem; 
+    font-weight: 600; 
+    color: var(--text-muted); 
+    background: #f1f5f9; 
+    padding: 0.25rem 0.75rem; 
+    border-radius: 6px;
+    white-space: nowrap; /* Prevents dates from wrapping strangely */
+    border: 1px solid #e2e8f0;
+}
+
+/* Bullet Deliverables Formatting rules */
+.bullet-list { list-style: none; }
+.bullet-list li { position: relative; padding-left: 1.25rem; margin-bottom: 0.45rem; font-size: 0.95rem; color: #334155; text-align: justify; }
+.bullet-list li::before { content: "—"; position: absolute; left: 0; color: var(--sky-blue); font-weight: bold; }
+
+/* Historical Rows Formatting */
+.timeline-card.historical { padding: 1.5rem 2rem; background: #fafafa; }
+.historical-summary { font-size: 0.92rem; color: var(--text-muted); line-height: 1.5; }
+
+/* Sidebar Component Panels formatting rules */
+.side-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; }
+.side-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-main); border-bottom: 2px solid var(--bg-main); padding-bottom: 0.5rem; margin-bottom: 1.25rem; }
+.side-title:not(:first-of-type) { margin-top: 1.5rem; }
+.side-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; }
+.side-item:last-of-type { margin-bottom: 0; }
+.side-tag { font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; min-width: 52px; text-align: center; }
+.badge-csm  { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.badge-itil { background: #fdf2f8; color: #9d174d; border: 1px solid #fbcfe8; }
+.badge-cap  { background: #f0fdfa; color: #115e59; border: 1px solid #99f6e4; }
+.side-item strong { font-size: 0.9rem; color: var(--text-main); display: block; }
+.side-item p { font-size: 0.8rem; color: var(--text-muted); }
+.side-divider { height: 1px; background: var(--border-color); margin: 1.5rem 0; }
+.side-icon-edu { font-size: 1.15rem; }
+.univ-title { font-size: 0.88rem; font-weight: 600; color: var(--text-main); }
+.secondary-univ { margin-top: 0.5rem; }
+.univ-date { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Technical Skills Tags Formatting */
+.side-skill-block h5 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.02em; color: #64748b; margin-bottom: 0.6rem; }
+.tag-group { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.tag-pill { font-size: 0.78rem; font-weight: 500; padding: 0.25rem 0.6rem; border-radius: 6px; }
+.tag-pill.accent-pill { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.tag-pill.standard-pill { background-color: #fff; color: var(--text-main); border: 1px solid var(--border-color); }
+
+/* Sidebar Languages Rules */
+.language-row { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.4rem; margin-bottom: 0.4rem; border-bottom: 1px dashed var(--border-color); }
+.lang-name { font-size: 0.88rem; font-weight: 600; color: var(--text-main); }
+.lang-level { font-size: 0.8rem; font-weight: 500; }
+.level-native { color: #16a34a; }
+.level-c2 { color: var(--sky-blue); }
+.level-basic { color: #64748b; }
+
+/* Sandbox Mock Area */
+.sandbox-area { background-color: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; }
+.sandbox-area h4 { font-size: 0.95rem; margin-bottom: 0.25rem; }
+.sandbox-area p { font-size: 0.8rem; color: #c2410c; margin-bottom: 1rem; }
+.status-indicator { font-family: monospace; font-size: 0.75rem; font-weight: 700; background: #ffedd5; padding: 0.4rem; border-radius: 6px; text-align: center; color: #c2410c; }
+
+/* Footer */
+footer { background-color: var(--dark-primary); border-top: 1px solid #1e293b; padding: 2.5rem 2rem; color: #64748b; font-size: 0.82rem; text-align: center; }
+.footer-content { max-width: 1200px; margin: 0 auto; }
+
+/* Fully Responsive Breakpoints Engine */
+@media (max-width: 950px) {
+    .container { flex-direction: column; align-items: stretch; }
+    .main-content, .sidebar { width: 100%; flex: none; }
+}
+@media (max-width: 650px) {
+    .card-header-line { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .badge-date { align-self: flex-start; }
+    .hero-main-info { flex-direction: column; text-align: center; gap: 1.25rem; }
+    .hero-badges { justify-content: center; }
+}
