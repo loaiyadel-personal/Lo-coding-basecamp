@@ -1,0 +1,68 @@
+/* 1. Design Variables & Resets */
+:root {
+    --primary-color: #2c3e50;
+    --accent-color: #3498db;
+    --bg-color: #f8f9fa;
+    --text-color: #333333;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+}
+
+/* 2. Header & Footer Layout */
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+footer {
+    background-color: #222;
+    color: #888;
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+    font-size: 0.9rem;
+}
+
+/* 3. Modern Responsive Layout (Flexbox) */
+.container {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap; /* Automatically drops to single column on mobile screens */
+}
+
+.content-main {
+    flex: 3; /* Takes up 3 parts of the space */
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.sidebar {
+    flex: 1; /* Takes up 1 part of the space */
+    background: #e1e8ed;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+/* 4. Small adjustments for heading spacing */
+h2, h3 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
