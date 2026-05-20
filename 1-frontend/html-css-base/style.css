@@ -337,6 +337,12 @@ body{
   padding:.18rem .62rem;border-radius:var(--r-full);
   letter-spacing:.04em;text-transform:uppercase;
 }
+.badge-qa{
+  font-size:.67rem;font-weight:800;color:#7c3aed;
+  background:#ede9fe;border:1px solid rgba(124,58,237,.2);
+  padding:.18rem .62rem;border-radius:var(--r-full);
+  letter-spacing:.04em;text-transform:uppercase;
+}
 
 /* bullets */
 .bullets{list-style:none;}
@@ -352,15 +358,15 @@ body{
 }
 .bullets li:last-child{margin-bottom:0;}
 
-/* historical */
+/* historical — kept for any future use */
 .exp-card.historical{
   background:var(--bg-warm);border-color:var(--border-soft);
   box-shadow:none;padding:1.3rem 1.65rem;
 }
 .exp-card.historical::before{background:var(--subtle);}
 .hist-note{
-  font-size:.855rem;color:var(--muted);
-  line-height:1.65;font-style:italic;
+  font-size:.875rem;color:var(--muted);
+  line-height:1.65;
 }
 
 /* ╔══════════════════════════════════════════════════════════╗
