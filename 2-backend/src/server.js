@@ -28,8 +28,23 @@ app.use(express.static(path.join(__dirname, '../public'), {
 
 // ─── Security & Logging ───────────────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));  // CSP off for admin inline scripts
-app.use(cors({ origin: '*' }));   // Tighten to your frontend URL in production
-app.use(morgan('dev'));
+
+const allowedOrigins = [
+  'http://localhost:3001',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+  'https://loaiyadel-personal.github.io',  // GitHub Pages CV
+];
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow requests with no origin (curl, Render health checks, same-origin admin)
+    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+}));
+
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // ─── Rate limiting ────────────────────────────────────────────────────────────
 const limiter = rateLimit({

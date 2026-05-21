@@ -7,7 +7,10 @@
 (function () {
   'use strict';
 
-  const API_BASE = 'http://localhost:3001/api';
+  // Auto-detect: use Render in production (GitHub Pages), localhost in dev
+  const API_BASE = window.location.hostname === 'loaiyadel-personal.github.io'
+    ? 'https://loaiy-cv-api.onrender.com/api'
+    : 'http://localhost:3001/api';
 
   /* ── XSS-safe escape ──────────────────────────────────────────── */
   function esc(str) {

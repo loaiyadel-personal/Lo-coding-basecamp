@@ -548,7 +548,10 @@
 
 <!-- ════════════════════════  API SCRIPTS  ════════════════════════ -->
 <script>
-  const API = 'http://localhost:3001/api';
+  // Auto-detect: Render in production (GitHub Pages), localhost in dev
+  const API = window.location.hostname === 'loaiyadel-personal.github.io'
+    ? 'https://loaiy-cv-api.onrender.com/api'
+    : 'http://localhost:3001/api';
 
   // ── Analytics: track page view with visitor deduplication ──────────────
   (function trackPageView() {
