@@ -29,6 +29,7 @@ const seed = async () => {
   // ── Profile ──────────────────────────────────────────────────────────────
   await Profile.create({
     name:        'Loaiy Adel',
+    photo:       'https://raw.githubusercontent.com/loaiyadel-personal/Lo-coding-basecamp/main/1-frontend/html-css-base/IMG_2141.jpeg',
     title:       'Senior Scrum Master',
     subtitle:    'Agile Project Manager · Delivery Lead',
     bio:         'A results-driven **Senior Scrum Master and Agile Project Manager** with 11+ years of enterprise delivery experience spanning software engineering, QA, and scaled Agile transformation. Operating at the intersection of servant leadership and programme governance, Loaiy has built and guided high-performance engineering teams at tier-1 organisations across Egypt and globally — wielding **Scrum, SAFe, and LeSS** to eliminate bottlenecks, unlock sustainable velocity, and deliver measurable business outcomes.',
