@@ -118,18 +118,17 @@ body{
 }
 .nav-loc svg{width:13px;height:13px;}
 .nav-cta{
-  display:flex;align-items:center;gap:.38rem;
-  padding:.38rem .85rem;
+  display:inline-flex;align-items:center;gap:.42rem;
+  padding:.44rem 1rem;
   background:var(--sky);color:#fff;
   font-size:.8rem;font-weight:600;
   border-radius:var(--r-full);
-  text-decoration:none;letter-spacing:.01em;
+  text-decoration:none;letter-spacing:.01em;white-space:nowrap;
   transition:background var(--t-f) var(--ease),box-shadow var(--t-f) var(--ease),transform var(--t-f) var(--ease);
-  margin-left:.4rem;
+  margin-left:.55rem;flex-shrink:0;
 }
-.nav-cta svg{width:13px;height:13px;flex-shrink:0;}
+.nav-cta svg{width:14px;height:14px;flex-shrink:0;}
 .nav-cta:hover{background:var(--sky-hover);box-shadow:var(--sh-sky);transform:translateY(-1px);}
-@media(max-width:680px){.nav-cta span{display:none;} .nav-cta{padding:.4rem .55rem;}}
 
 /* ╔══════════════════════════════════════════════════════════╗
    ║  HERO                                                    ║
@@ -560,29 +559,82 @@ footer{
 /* ╔══════════════════════════════════════════════════════════╗
    ║  RESPONSIVE                                              ║
    ╚══════════════════════════════════════════════════════════╝ */
+
+/* ── Tablet ─────────────────────────────────────────── */
 @media(max-width:1020px){
   .page-grid{grid-template-columns:1fr;}
   .sidebar{order:-1;}
 }
+
+/* ── Small desktop / large tablet (≤860px) ──────────── */
+@media(max-width:860px){
+  /* Navbar: hide location + the two separators around it */
+  #nav-location,#nav-sep-2,#nav-sep-3{display:none;}
+}
+
+/* ── Mobile landscape / large phone (≤680px) ────────── */
 @media(max-width:680px){
-  .navbar{padding:.7rem 1rem;}
-  .nav-brand{display:none;}
+  /* Navbar: brand on left, Contact Me CTA on right — nothing else */
+  .navbar{padding:.65rem 1rem;}
+  .nav-brand{display:block;}           /* restore brand on mobile */
+  .nav-link{display:none;}             /* hide phone & email links */
+  #nav-location{display:none;}         /* hide location */
+  .nav-sep{display:none;}              /* hide all separators */
+  .nav-links{gap:0;justify-content:flex-end;}
+  .nav-cta{margin-left:0;font-size:.8rem;padding:.44rem .9rem;}
+
+  /* Hero */
   .hero{padding:3rem 1.25rem 2.5rem;}
   .hero-top{flex-direction:column;text-align:center;gap:1.35rem;}
-  .hero-chips{justify-content:center;}
-  .hero-bio{border-left:none;padding-left:0;border-top:2px solid rgba(2,114,192,.3);padding-top:.95rem;}
+  .hero-chips{justify-content:center;gap:.5rem;}
+  .hero-bio{
+    border-left:none;padding-left:0;
+    border-top:2px solid rgba(2,114,192,.3);padding-top:.95rem;
+  }
   .hero-stats{justify-content:space-around;}
+
+  /* Layout */
   .page-grid{padding:0 1rem;margin:1.5rem auto;}
   .card-top{flex-direction:column;gap:.7rem;}
   .card-right{align-items:flex-start;flex-direction:row;flex-wrap:wrap;}
-  .nav-links{gap:0;}
-  .nav-sep{display:none;}
-  .nav-link,.nav-loc{padding:.38rem .48rem;font-size:.75rem;}
+
+  /* Contact info strip: 2-up grid on mobile */
+  .contact-info-strip{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.5rem;
+  }
+  .contact-info-item{
+    justify-content:center;
+    font-size:.8rem;
+    padding:.45rem .7rem;
+  }
 }
+
+/* ── Small phone (≤420px) ────────────────────────────── */
 @media(max-width:420px){
   .hero-name{font-size:1.75rem;}
   .exp-card{padding:1.2rem;}
   .side-card{padding:1.1rem;}
+
+  /* Navbar CTA slightly smaller on tiny screens */
+  .nav-cta{font-size:.77rem;padding:.42rem .8rem;}
+
+  /* Contact section: less vertical padding on small phones */
+  .contact-section{padding:2.5rem 1.1rem 3rem;}
+
+  /* Contact strip: 1 column on very small phones */
+  .contact-info-strip{
+    grid-template-columns:1fr;
+  }
+  .contact-info-item{
+    justify-content:flex-start;
+    font-size:.82rem;
+    padding:.48rem .85rem;
+  }
+
+  /* Hero chips: tighter */
+  .chip-avail,.chip-li,.chip-yrs{font-size:.72rem;padding:.3rem .75rem;}
 }
 /* ════════════════════════  CONTACT SECTION  ════════════════════════ */
 .contact-section{
@@ -611,21 +663,23 @@ footer{
 .contact-info-strip{
   display:flex;
   flex-wrap:wrap;
-  gap:.6rem;
+  gap:.55rem;
   margin-bottom:2rem;
 }
 .contact-info-item{
-  display:inline-flex;align-items:center;gap:.45rem;
-  padding:.42rem .9rem;
+  display:inline-flex;align-items:center;gap:.42rem;
+  padding:.44rem .95rem;
   background:rgba(255,255,255,.05);
   border:1px solid rgba(255,255,255,.09);
   border-radius:9999px;
-  color:rgba(255,255,255,.75);
-  font-size:.82rem;font-weight:500;
-  text-decoration:none;
+  color:rgba(255,255,255,.78);
+  font-size:.83rem;font-weight:500;
+  text-decoration:none;white-space:nowrap;
   transition:background 140ms ease,border-color 140ms ease,color 140ms ease;
 }
-.contact-info-item svg{width:13px;height:13px;flex-shrink:0;opacity:.7;}
+.contact-info-item svg{
+  width:14px;height:14px;flex-shrink:0;opacity:.7;
+}
 .contact-info-item:hover:not(.contact-info-loc){
   background:rgba(2,114,192,.18);
   border-color:rgba(2,114,192,.4);
