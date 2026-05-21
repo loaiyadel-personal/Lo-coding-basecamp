@@ -458,74 +458,62 @@ function renderRecentVisitors(data) {
 }
 
 function renderChart(data) {
-  const canvas   = $('#visitsChart');
-  const emptyEl  = $('#chartEmpty');
+  const canvas  = $('#visitsChart');
+  const emptyEl = $('#chartEmpty');
 
   if (!data || !data.length) {
-    canvas.hidden   = true;
-    emptyEl.hidden  = false;
+    canvas.hidden  = true;
+    emptyEl.hidden = false;
     return;
   }
   canvas.hidden  = false;
   emptyEl.hidden = true;
 
-  const labels  = data.map(d => {
+  const labels = data.map(d => {
     const [, m, day] = d._id.split('-');
     return `${day}/${m}`;
   });
-  const views   = data.map(d => d.views);
-  const unique  = data.map(d => d.unique);
+  const views  = data.map(d => d.views);
+  const unique = data.map(d => d.unique);
 
-  // Destroy previous instance to avoid canvas reuse error
-  if (visitsChartInstance) {
-    visitsChartInstance.destroy();
-    visitsChartInstance = null;
-  }
+  if (visitsChartInstance) { visitsChartInstance.destroy(); visitsChartInstance = null; }
 
   const ctx = canvas.getContext('2d');
 
-  // Gradient fill for page views
-  const gradViews = ctx.createLinearGradient(0, 0, 0, 280);
-  gradViews.addColorStop(0,   'rgba(2, 114, 192, 0.35)');
-  gradViews.addColorStop(0.7, 'rgba(2, 114, 192, 0.05)');
-  gradViews.addColorStop(1,   'rgba(2, 114, 192, 0)');
-
-  // Gradient fill for unique visitors
-  const gradUnique = ctx.createLinearGradient(0, 0, 0, 280);
-  gradUnique.addColorStop(0,   'rgba(34, 197, 94, 0.25)');
-  gradUnique.addColorStop(0.7, 'rgba(34, 197, 94, 0.04)');
+  // Gradient under the unique-visitors line
+  const gradUnique = ctx.createLinearGradient(0, 0, 0, 300);
+  gradUnique.addColorStop(0,   'rgba(34, 197, 94, 0.18)');
   gradUnique.addColorStop(1,   'rgba(34, 197, 94, 0)');
 
   visitsChartInstance = new Chart(ctx, {
-    type: 'line',
     data: {
       labels,
       datasets: [
+        // ── Bars: Page Views ───────────────────────────────
         {
+          type:            'bar',
           label:           'Page Views',
           data:            views,
+          backgroundColor: 'rgba(2, 114, 192, 0.55)',
+          hoverBackgroundColor: 'rgba(2, 114, 192, 0.8)',
           borderColor:     '#0272c0',
-          backgroundColor: gradViews,
-          borderWidth:     2.5,
-          pointRadius:     3,
-          pointHoverRadius:6,
-          pointBackgroundColor: '#0272c0',
-          pointBorderColor:     '#0d1829',
-          pointBorderWidth:     2,
-          tension:         0.4,
-          fill:            true,
+          borderWidth:     0,
+          borderRadius:    4,
+          borderSkipped:   false,
           order:           2,
         },
+        // ── Line: Unique Visitors ──────────────────────────
         {
+          type:            'line',
           label:           'Unique Visitors',
           data:            unique,
           borderColor:     '#22c55e',
           backgroundColor: gradUnique,
-          borderWidth:     2,
-          pointRadius:     3,
-          pointHoverRadius:6,
+          borderWidth:     2.5,
+          pointRadius:     4,
+          pointHoverRadius:7,
           pointBackgroundColor: '#22c55e',
-          pointBorderColor:     '#0d1829',
+          pointBorderColor:     '#111d2e',
           pointBorderWidth:     2,
           tension:         0.4,
           fill:            true,
@@ -546,29 +534,24 @@ function renderChart(data) {
           borderWidth:     1,
           titleColor:      '#e8eef5',
           bodyColor:       '#b0c4d8',
-          padding:         10,
+          padding:         12,
           cornerRadius:    8,
           callbacks: {
-            title: items => {
-              const d = data[items[0].dataIndex];
-              return d ? d._id : items[0].label;
-            },
-            label: item => ` ${item.dataset.label}: ${item.parsed.y}`,
+            title: items => data[items[0].dataIndex]?._id ?? items[0].label,
+            label: item  => ` ${item.dataset.label}: ${item.parsed.y}`,
           },
         },
       },
       scales: {
         x: {
-          grid:  { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-          ticks: { color: '#6b85a0', font: { size: 11 }, maxRotation: 0,
-                   maxTicksLimit: 10 },
+          grid:   { display: false },
+          ticks:  { color: '#6b85a0', font: { size: 11 }, maxRotation: 0, maxTicksLimit: 12 },
           border: { display: false },
         },
         y: {
           beginAtZero: true,
-          grid:  { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-          ticks: { color: '#6b85a0', font: { size: 11 }, precision: 0,
-                   stepSize: 1 },
+          grid:   { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+          ticks:  { color: '#6b85a0', font: { size: 11 }, precision: 0, stepSize: 1 },
           border: { display: false },
         },
       },
