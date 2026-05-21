@@ -33,7 +33,8 @@ const allowedOrigins = [
   'http://localhost:3001',
   'http://localhost:5500',
   'http://127.0.0.1:5500',
-  'https://loaiyadel-personal.github.io',  // GitHub Pages CV
+  'https://loaiyadel-personal.github.io',   // GitHub Pages CV
+  'https://loaiy-cv-api.onrender.com',      // Admin dashboard (same-server)
 ];
 app.use(cors({
   origin: (origin, cb) => {
