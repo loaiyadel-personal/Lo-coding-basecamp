@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════
    Admin Dashboard JS — Loaiy Adel CV
+   No native alert() / confirm() — all in-page UI
    ═══════════════════════════════════════════════════════════ */
 
 const API = '/api';
@@ -34,37 +35,68 @@ function statCard(label, value, mod = '') {
 }
 
 function showStatus(el, msg, ok = true) {
-  el.textContent = ok ? '✓ ' + msg : '✗ ' + msg;
+  el.textContent = (ok ? '✓ ' : '✗ ') + msg;
   el.className = 'save-status ' + (ok ? 'ok' : 'err');
   setTimeout(() => { el.textContent = ''; el.className = 'save-status'; }, 3000);
 }
 
+/* ── Toast notifications ────────────────────────────────── */
+function toast(msg, type = 'ok') {
+  const icons = { ok: '✓', err: '✗', info: 'ℹ' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${esc(msg)}</span>`;
+  $('#toastContainer').appendChild(el);
+  setTimeout(() => {
+    el.classList.add('hiding');
+    el.addEventListener('animationend', () => el.remove());
+  }, 3500);
+}
+
+/* ── Custom confirm modal ───────────────────────────────── */
+function confirmDialog(message, label = 'Delete') {
+  return new Promise((resolve) => {
+    $('#confirmMsg').textContent = message;
+    $('#confirmYes').textContent = label;
+    $('#confirmOverlay').hidden = false;
+
+    const yes = $('#confirmYes');
+    const no  = $('#confirmNo');
+
+    function cleanup(result) {
+      $('#confirmOverlay').hidden = true;
+      yes.replaceWith(yes.cloneNode(true)); // remove old listeners
+      no.replaceWith(no.cloneNode(true));
+      resolve(result);
+    }
+
+    $('#confirmYes').addEventListener('click', () => cleanup(true),  { once: true });
+    $('#confirmNo').addEventListener('click',  () => cleanup(false), { once: true });
+  });
+}
+
 /* ── Auth ───────────────────────────────────────────────── */
 function init() {
-  if (TOKEN) {
-    showDashboard();
-  } else {
-    showLogin();
-  }
+  TOKEN ? showDashboard() : showLogin();
 }
 
 function showLogin() {
-  $('#loginScreen').hidden  = false;
-  $('#dashboard').hidden    = true;
+  $('#loginScreen').hidden = false;
+  $('#dashboard').hidden   = true;
 }
 
 function showDashboard() {
-  $('#loginScreen').hidden  = true;
-  $('#dashboard').hidden    = false;
+  $('#loginScreen').hidden = true;
+  $('#dashboard').hidden   = false;
   loadTab('messages');
 }
 
 $('#loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const btn    = $('#loginBtn');
-  const label  = btn.querySelector('.btn-label');
-  const spin   = btn.querySelector('.spinner');
-  const errEl  = $('#loginError');
+  const btn   = $('#loginBtn');
+  const label = btn.querySelector('.btn-label');
+  const spin  = btn.querySelector('.spinner');
+  const errEl = $('#loginError');
   errEl.textContent = '';
 
   btn.disabled = true; label.hidden = true; spin.hidden = false;
@@ -77,7 +109,7 @@ $('#loginForm').addEventListener('submit', async (e) => {
     localStorage.setItem('cv_admin_token', token);
     showDashboard();
   } catch (err) {
-    errEl.textContent = err.message;
+    errEl.textContent = '✗ ' + err.message;
   } finally {
     btn.disabled = false; label.hidden = false; spin.hidden = true;
   }
@@ -87,6 +119,7 @@ $('#logoutBtn').addEventListener('click', () => {
   TOKEN = '';
   localStorage.removeItem('cv_admin_token');
   showLogin();
+  toast('Logged out', 'info');
 });
 
 /* ── Tab switching ──────────────────────────────────────── */
@@ -134,23 +167,21 @@ async function loadMessages() {
   try {
     const { data: msgs } = await apiFetch('/admin/messages');
 
-    // Stats
-    const total   = msgs.length;
-    const unread  = msgs.filter(m => !m.read).length;
-    const today   = msgs.filter(m => new Date(m.createdAt).toDateString() === new Date().toDateString()).length;
+    const total  = msgs.length;
+    const unread = msgs.filter(m => !m.read).length;
+    const today  = msgs.filter(m => new Date(m.createdAt).toDateString() === new Date().toDateString()).length;
 
     $('#msgStats').innerHTML =
       statCard('Total Messages', total, 'accent') +
       statCard('Unread', unread, unread > 0 ? 'amber' : '') +
       statCard('Today', today, 'green');
 
-    // Unread badge
     const badge = $('#unreadBadge');
     if (unread > 0) { badge.textContent = unread; badge.hidden = false; }
     else badge.hidden = true;
 
     if (!msgs.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty">No messages yet</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">No messages yet — submit the contact form on your CV to test</td></tr>';
       return;
     }
 
@@ -178,21 +209,20 @@ async function loadMessages() {
     `).join('');
 
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="6" class="empty">Error: ${err.message}</td></tr>`;
-    if (err.message.includes('token')) { TOKEN = ''; localStorage.removeItem('cv_admin_token'); showLogin(); }
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">Error loading messages</td></tr>`;
+    if (err.message.toLowerCase().includes('token') || err.message.includes('401')) {
+      TOKEN = ''; localStorage.removeItem('cv_admin_token'); showLogin();
+    }
   }
 }
-
-let _messages = {};
 
 async function viewMessage(id) {
   try {
     const { data: msgs } = await apiFetch('/admin/messages');
     const m = msgs.find(x => x._id === id);
     if (!m) return;
-    _messages[id] = m;
 
-    $('#modalTitle').textContent = `Message from ${m.name}`;
+    $('#modalTitle').textContent = `From ${m.name}`;
     $('#modalBody').innerHTML = `
       <div class="msg-field"><strong>From</strong><span>${esc(m.name)} — <a href="mailto:${esc(m.email)}" style="color:var(--sky)">${esc(m.email)}</a></span></div>
       <div class="msg-field"><strong>Subject</strong><span>${esc(m.subject || '(no subject)')}</span></div>
@@ -200,49 +230,46 @@ async function viewMessage(id) {
       <div class="msg-field"><strong>Message</strong><p>${esc(m.body)}</p></div>
     `;
     $('#modalOverlay').hidden = false;
-
     if (!m.read) markRead(id, true);
-  } catch (err) { alert(err.message); }
+  } catch (err) { toast('Could not load message', 'err'); }
 }
 
 async function markRead(id, silent = false) {
   try {
     await apiFetch(`/admin/messages/${id}/read`, { method: 'PATCH' });
-    if (!silent) loadMessages();
-    else {
-      const row = $(`tr[data-id="${id}"]`);
-      if (row) { row.classList.remove('unread'); }
-      loadMessages();
-    }
-  } catch (err) { if (!silent) alert(err.message); }
+    loadMessages();
+    if (!silent) toast('Marked as read', 'ok');
+  } catch (err) { toast(err.message, 'err'); }
 }
 
 async function deleteMessage(id) {
-  if (!confirm('Delete this message permanently?')) return;
+  const ok = await confirmDialog('This message will be permanently deleted.', 'Delete');
+  if (!ok) return;
   try {
     await apiFetch(`/admin/messages/${id}`, { method: 'DELETE' });
     loadMessages();
-  } catch (err) { alert(err.message); }
+    toast('Message deleted', 'ok');
+  } catch (err) { toast(err.message, 'err'); }
 }
 
-// Make these global so onclick= works
-window.viewMessage    = viewMessage;
-window.markRead       = markRead;
-window.deleteMessage  = deleteMessage;
+window.viewMessage   = viewMessage;
+window.markRead      = markRead;
+window.deleteMessage = deleteMessage;
 
-// Modal close
+/* ── Modals ─────────────────────────────────────────────── */
 $('#modalClose').addEventListener('click', () => $('#modalOverlay').hidden = true);
-$('#modalOverlay').addEventListener('click', e => { if (e.target === $('#modalOverlay')) $('#modalOverlay').hidden = true; });
+$('#modalOverlay').addEventListener('click', e => {
+  if (e.target === $('#modalOverlay')) $('#modalOverlay').hidden = true;
+});
 
 /* ══════════════════════════════════════════════════════════
    ANALYTICS
    ══════════════════════════════════════════════════════════ */
 async function loadAnalytics() {
-  $('#analyticsStats').innerHTML = statCard('Loading…', '…');
+  $('#analyticsStats').innerHTML = statCard('Loading…', '—');
   try {
     const { data } = await apiFetch('/admin/analytics');
     const { totalVisits, visitsByDay, topReferrers } = data;
-
     const last30 = visitsByDay.reduce((s, d) => s + d.count, 0);
     const today  = visitsByDay.find(d => d._id === new Date().toISOString().slice(0,10))?.count || 0;
 
@@ -254,18 +281,20 @@ async function loadAnalytics() {
     renderChart(visitsByDay);
     renderReferrers(topReferrers);
   } catch (err) {
-    $('#analyticsStats').innerHTML = `<div class="empty">Error: ${err.message}</div>`;
+    $('#analyticsStats').innerHTML = `<div class="empty">Could not load analytics</div>`;
   }
 }
 
 function renderChart(data) {
   const wrap = $('#chartWrap');
-  if (!data.length) { wrap.innerHTML = '<div class="empty">No visits in last 30 days yet.<br>Visit the CV page to see data here.</div>'; return; }
-
+  if (!data.length) {
+    wrap.innerHTML = '<div class="empty" style="align-self:center;width:100%">No visits yet.<br>Open your CV page to record the first visit.</div>';
+    return;
+  }
   const max = Math.max(...data.map(d => d.count), 1);
   wrap.innerHTML = data.map(d => {
-    const pct = Math.round((d.count / max) * 100);
-    const label = d._id.slice(5); // MM-DD
+    const pct   = Math.round((d.count / max) * 100);
+    const label = d._id.slice(5);
     return `<div class="chart-bar-wrap" title="${d._id}: ${d.count} visit${d.count !== 1 ? 's' : ''}">
       <div class="chart-bar" style="height:${Math.max(pct, 2)}%"></div>
       <div class="chart-label">${label}</div>
@@ -306,7 +335,6 @@ async function loadCV(section) {
   if (section === 'certifications') await loadList('certifications');
 }
 
-/* Profile */
 async function loadProfile() {
   try {
     const { data } = await apiFetch('/cv/profile');
@@ -316,7 +344,7 @@ async function loadProfile() {
     ['name','title','subtitle','email','phone','location','linkedin','statusChip','bio'].forEach(k => {
       if (form.elements[k]) form.elements[k].value = data[k] || '';
     });
-  } catch (err) { console.error(err); }
+  } catch (err) { toast('Could not load profile', 'err'); }
 }
 
 $('#profileForm').addEventListener('submit', async (e) => {
@@ -330,34 +358,36 @@ $('#profileForm').addEventListener('submit', async (e) => {
   try {
     await apiFetch(`/admin/cv/profile/${_profileId}`, { method: 'PUT', body: JSON.stringify(body) });
     showStatus(status, 'Saved!');
-  } catch (err) { showStatus(status, err.message, false); }
+    toast('Profile saved ✓', 'ok');
+  } catch (err) { showStatus(status, err.message, false); toast(err.message, 'err'); }
 });
 
 /* Generic list sections */
 const SECTION_META = {
   experience: {
-    title:  e => e.role + ' @ ' + e.company,
-    sub:    e => `${e.startDate} — ${e.endDate}${e.isCurrent ? ' · Current' : ''}`,
-    fields: ['company','role','location','startDate','endDate'],
-    modal:  renderExpModal,
+    title: e => e.role + ' @ ' + e.company,
+    sub:   e => `${e.startDate} — ${e.endDate}${e.isCurrent ? ' · Current' : ''}`,
+    modal: renderExpModal,
   },
   skills: {
-    title:  s => s.category,
-    sub:    s => (s.items || []).join(', '),
-    fields: ['category'],
-    modal:  renderSkillModal,
+    title: s => s.category,
+    sub:   s => (s.items || []).join(', '),
+    modal: renderSkillModal,
   },
   certifications: {
-    title:  c => c.name,
-    sub:    c => `${c.issuer}${c.issueDate ? ' · ' + c.issueDate : ''}`,
-    fields: ['name','issuer','issueDate'],
-    modal:  renderCertModal,
+    title: c => c.name,
+    sub:   c => `${c.issuer}${c.issueDate ? ' · ' + c.issueDate : ''}`,
+    modal: renderCertModal,
   },
 };
 
+function listElId(section) {
+  const map = { experience: 'expList', skills: 'skillList', certifications: 'certList' };
+  return map[section];
+}
+
 async function loadList(section) {
-  const listEl = $(`#${section === 'skills' ? 'skill' : section.slice(0,-1)}List`) ||
-                 $(`#${section}List`);
+  const listEl = $('#' + listElId(section));
   if (!listEl) return;
   listEl.innerHTML = '<div class="empty">Loading…</div>';
   try {
@@ -380,7 +410,7 @@ async function loadList(section) {
         </div>
       </div>
     `).join('');
-  } catch (err) { listEl.innerHTML = `<div class="empty">Error: ${err.message}</div>`; }
+  } catch (err) { listEl.innerHTML = `<div class="empty">Error loading ${section}</div>`; }
 }
 
 async function editItem(section, id) {
@@ -389,60 +419,66 @@ async function editItem(section, id) {
     const item = data.find(x => x._id === id);
     if (!item) return;
     const meta = SECTION_META[section];
-    $('#modalTitle').textContent = 'Edit ' + section.slice(0,-1);
+    $('#modalTitle').textContent = 'Edit';
     $('#modalBody').innerHTML = meta.modal(item, id, section);
     $('#modalOverlay').hidden = false;
-  } catch (err) { alert(err.message); }
+  } catch (err) { toast('Could not load item', 'err'); }
 }
 
 async function deleteItem(section, id) {
-  if (!confirm(`Delete this ${section.slice(0,-1)}?`)) return;
+  const ok = await confirmDialog(`Delete this ${section.slice(0,-1)}? This cannot be undone.`, 'Delete');
+  if (!ok) return;
   try {
     await apiFetch(`/admin/cv/${section}/${id}`, { method: 'DELETE' });
     loadList(section);
-  } catch (err) { alert(err.message); }
+    toast('Deleted', 'ok');
+  } catch (err) { toast(err.message, 'err'); }
 }
 
 window.editItem   = editItem;
 window.deleteItem = deleteItem;
 
+/* ── Item modals ────────────────────────────────────────── */
 function renderExpModal(item, id, section) {
-  return `<form onsubmit="saveItem(event,'${section}','${id}')">
+  const saveCall = id ? `saveItem(event,'${section}','${id}')` : `addItem(event,'${section}')`;
+  return `<form onsubmit="${saveCall}">
     <div style="display:flex;flex-direction:column;gap:.75rem">
-      ${field('Role', 'role', item.role)}
+      ${field('Role / Job Title', 'role', item.role)}
       ${field('Company', 'company', item.company)}
       ${field('Location', 'location', item.location)}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
         ${field('Start Date', 'startDate', item.startDate)}
         ${field('End Date', 'endDate', item.endDate)}
       </div>
-      <label style="display:flex;align-items:center;gap:.5rem;color:var(--text-mid);font-size:.85rem">
-        <input type="checkbox" name="isCurrent" ${item.isCurrent ? 'checked' : ''} style="width:auto"> Current role
+      <label style="display:flex;align-items:center;gap:.5rem;color:var(--text-mid);font-size:.85rem;cursor:pointer">
+        <input type="checkbox" name="isCurrent" ${item.isCurrent ? 'checked' : ''} style="width:auto;cursor:pointer"> Current role
       </label>
       ${fieldArea('Achievements (one per line)', 'bullets', (item.bullets||[]).join('\n'))}
-      <button type="submit" class="btn-save">Save Changes</button>
+      <button type="submit" class="btn-save" style="align-self:flex-start">Save</button>
     </div>
   </form>`;
 }
 
 function renderSkillModal(item, id, section) {
-  return `<form onsubmit="saveItem(event,'${section}','${id}')">
+  const saveCall = id ? `saveItem(event,'${section}','${id}')` : `addItem(event,'${section}')`;
+  return `<form onsubmit="${saveCall}">
     <div style="display:flex;flex-direction:column;gap:.75rem">
-      ${field('Category', 'category', item.category)}
+      ${field('Category Name', 'category', item.category)}
       ${fieldArea('Skills (comma-separated)', 'items', (item.items||[]).join(', '))}
-      <button type="submit" class="btn-save">Save Changes</button>
+      <button type="submit" class="btn-save" style="align-self:flex-start">Save</button>
     </div>
   </form>`;
 }
 
 function renderCertModal(item, id, section) {
-  return `<form onsubmit="saveItem(event,'${section}','${id}')">
+  const saveCall = id ? `saveItem(event,'${section}','${id}')` : `addItem(event,'${section}')`;
+  return `<form onsubmit="${saveCall}">
     <div style="display:flex;flex-direction:column;gap:.75rem">
       ${field('Certification Name', 'name', item.name)}
-      ${field('Issuer', 'issuer', item.issuer)}
-      ${field('Issue Date', 'issueDate', item.issueDate || '')}
-      ${field('Credential URL', 'credentialUrl', item.credentialUrl || '')}
-      <button type="submit" class="btn-save">Save Changes</button>
+      ${field('Issuer / Organisation', 'issuer', item.issuer)}
+      ${field('Issue Date (e.g. Nov 2025)', 'issueDate', item.issueDate || '')}
+      ${field('Credential URL (optional)', 'credentialUrl', item.credentialUrl || '')}
+      <button type="submit" class="btn-save" style="align-self:flex-start">Save</button>
     </div>
   </form>`;
 }
@@ -456,60 +492,51 @@ function fieldArea(label, name, value = '') {
 
 window.saveItem = async function(e, section, id) {
   e.preventDefault();
-  const form = e.target;
-  const fd   = new FormData(form);
-  const body = {};
-  for (const [k, v] of fd.entries()) body[k] = v;
-
-  // Coerce types
-  if (body.bullets)    body.bullets = body.bullets.split('\n').map(s => s.trim()).filter(Boolean);
-  if (body.items)      body.items   = body.items.split(',').map(s => s.trim()).filter(Boolean);
-  if ('isCurrent' in body) body.isCurrent = true;
-  else if (section === 'experience') body.isCurrent = false;
-
+  const body = formToBody(e.target, section);
   try {
     await apiFetch(`/admin/cv/${section}/${id}`, { method: 'PUT', body: JSON.stringify(body) });
     $('#modalOverlay').hidden = true;
     loadList(section);
-  } catch (err) { alert(err.message); }
+    toast('Saved ✓', 'ok');
+  } catch (err) { toast(err.message, 'err'); }
 };
 
 /* ── Add new items ──────────────────────────────────────── */
-$('#addExpBtn')?.addEventListener('click', () => openAddModal('experience', renderExpModal({}, null, 'experience')));
-$('#addSkillBtn')?.addEventListener('click', () => openAddModal('skills', renderSkillModal({}, null, 'skills')));
-$('#addCertBtn')?.addEventListener('click', () => openAddModal('certifications', renderCertModal({}, null, 'certifications')));
+$('#addExpBtn')?.addEventListener('click',  () => openAddModal('experience',     renderExpModal({},   null, 'experience')));
+$('#addSkillBtn')?.addEventListener('click', () => openAddModal('skills',        renderSkillModal({}, null, 'skills')));
+$('#addCertBtn')?.addEventListener('click',  () => openAddModal('certifications',renderCertModal({},  null, 'certifications')));
 
 function openAddModal(section, html) {
   $('#modalTitle').textContent = 'Add ' + section.slice(0,-1);
-  // Patch form submit to POST instead of PUT
-  $('#modalBody').innerHTML = html.replace(
-    `saveItem(event,'${section}','null')`,
-    `addItem(event,'${section}')`
-  );
+  $('#modalBody').innerHTML = html;
   $('#modalOverlay').hidden = false;
 }
 
 window.addItem = async function(e, section) {
   e.preventDefault();
-  const form = e.target;
-  const fd   = new FormData(form);
-  const body = {};
-  for (const [k, v] of fd.entries()) body[k] = v;
-  if (body.bullets) body.bullets = body.bullets.split('\n').map(s=>s.trim()).filter(Boolean);
-  if (body.items)   body.items   = body.items.split(',').map(s=>s.trim()).filter(Boolean);
-  if ('isCurrent' in body) body.isCurrent = true;
-  else if (section === 'experience') body.isCurrent = false;
-
+  const body = formToBody(e.target, section);
   try {
     await apiFetch(`/admin/cv/${section}`, { method: 'POST', body: JSON.stringify(body) });
     $('#modalOverlay').hidden = true;
     loadList(section);
-  } catch (err) { alert(err.message); }
+    toast('Added ✓', 'ok');
+  } catch (err) { toast(err.message, 'err'); }
 };
 
-/* ── XSS safe escaping ──────────────────────────────────── */
+function formToBody(form, section) {
+  const fd   = new FormData(form);
+  const body = {};
+  for (const [k, v] of fd.entries()) body[k] = v;
+  if (body.bullets)    body.bullets = body.bullets.split('\n').map(s => s.trim()).filter(Boolean);
+  if (body.items)      body.items   = body.items.split(',').map(s => s.trim()).filter(Boolean);
+  if ('isCurrent' in body) body.isCurrent = true;
+  else if (section === 'experience') body.isCurrent = false;
+  return body;
+}
+
+/* ── XSS-safe escape ────────────────────────────────────── */
 function esc(str) {
-  if (!str) return '';
+  if (str == null) return '';
   return String(str)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
