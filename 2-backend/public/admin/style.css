@@ -598,17 +598,59 @@ textarea { resize: vertical; }
 .item-list { display: flex; flex-direction: column; }
 .item-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.85rem 1.25rem;
+  gap: 0.85rem;
+  padding: 0.75rem 1.25rem;
   border-bottom: 1px solid var(--border);
 }
 .item-row:last-child { border-bottom: none; }
-.item-info { flex: 1; }
-.item-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+.item-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  border-radius: 7px;
+  background: rgba(255,255,255,0.06);
+  padding: 3px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  transition: opacity 200ms ease;
+}
+.item-icon-ph {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+.item-info { flex: 1; min-width: 0; }
+.item-title { font-size: 0.9rem; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .item-sub   { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
 .item-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+/* ── Icon field (URL + live preview) in modals ──────────── */
+.icon-field-row {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+}
+.icon-field-row input { flex: 1; }
+.icon-field-preview {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-mid);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.icon-field-preview img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  transition: opacity 200ms ease;
+}
 
 /* ── Modal ──────────────────────────────────────────────── */
 .modal-overlay {

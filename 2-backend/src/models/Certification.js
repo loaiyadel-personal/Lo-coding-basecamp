@@ -6,6 +6,7 @@ const CertificationSchema = new mongoose.Schema({
   issueDate:    { type: String },              // e.g. "Nov 2025"
   expiryDate:   { type: String },
   credentialUrl:{ type: String },
+  logo:         { type: String },              // URL of issuer logo
   order:        { type: Number, default: 0 },
 }, { timestamps: true });
 

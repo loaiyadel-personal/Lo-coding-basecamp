@@ -172,6 +172,12 @@
       const nowBadge = card.querySelector('.badge-now');
       if (nowBadge) nowBadge.hidden = !item.isCurrent;
 
+      // Company logo — swap in URL from DB (replaces embedded base64)
+      if (item.logo) {
+        const logoImg = card.querySelector('.logo-box .logo-img, .logo-box img');
+        if (logoImg) logoImg.src = item.logo;
+      }
+
       // Bullets
       const ul = card.querySelector('.bullets');
       if (ul && item.bullets && item.bullets.length) {
@@ -235,6 +241,12 @@
 
       // Link href
       if (cert.credentialUrl) item.href = cert.credentialUrl;
+
+      // Issuer logo — swap in URL from DB if provided
+      if (cert.logo) {
+        const logoImg = item.querySelector('.cred-logo-wrap img');
+        if (logoImg) logoImg.src = cert.logo;
+      }
     });
   }
 

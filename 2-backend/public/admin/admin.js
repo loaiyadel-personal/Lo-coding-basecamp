@@ -514,8 +514,14 @@ async function loadList(section) {
     const { data } = await apiFetch(`/cv/${section}`);
     if (!data.length) { listEl.innerHTML = '<div class="empty">None added yet</div>'; return; }
     const meta = SECTION_META[section];
-    listEl.innerHTML = data.map(item => `
+    const hasLogo = section === 'experience' || section === 'certifications';
+    listEl.innerHTML = data.map(item => {
+      const logoHtml = hasLogo && item.logo
+        ? `<img class="item-icon" src="${esc(item.logo)}" alt="" onerror="this.style.opacity='0'">`
+        : (hasLogo ? `<div class="item-icon-ph"></div>` : '');
+      return `
       <div class="item-row">
+        ${logoHtml}
         <div class="item-info">
           <div class="item-title">${esc(meta.title(item))}</div>
           <div class="item-sub">${esc(meta.sub(item))}</div>
@@ -528,8 +534,8 @@ async function loadList(section) {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
           </button>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   } catch (err) { listEl.innerHTML = `<div class="empty">Error loading ${section}</div>`; }
 }
 
@@ -573,6 +579,7 @@ function renderExpModal(item, id, section) {
       <label style="display:flex;align-items:center;gap:.5rem;color:var(--text-mid);font-size:.85rem;cursor:pointer">
         <input type="checkbox" name="isCurrent" ${item.isCurrent ? 'checked' : ''} style="width:auto;cursor:pointer"> Current role
       </label>
+      ${fieldIcon('Company Logo URL', 'logo', item.logo || '')}
       ${fieldArea('Achievements (one per line)', 'bullets', (item.bullets||[]).join('\n'))}
       <button type="submit" class="btn-save" style="align-self:flex-start">Save</button>
     </div>
@@ -598,6 +605,7 @@ function renderCertModal(item, id, section) {
       ${field('Issuer / Organisation', 'issuer', item.issuer)}
       ${field('Issue Date (e.g. Nov 2025)', 'issueDate', item.issueDate || '')}
       ${field('Credential URL (optional)', 'credentialUrl', item.credentialUrl || '')}
+      ${fieldIcon('Issuer Logo URL', 'logo', item.logo || '')}
       <button type="submit" class="btn-save" style="align-self:flex-start">Save</button>
     </div>
   </form>`;
@@ -608,6 +616,22 @@ function field(label, name, value = '') {
 }
 function fieldArea(label, name, value = '') {
   return `<div class="field"><label>${label}</label><textarea name="${name}" rows="4">${esc(value)}</textarea></div>`;
+}
+function fieldIcon(label, name, value = '') {
+  const pid = 'iprev-' + name + '-' + Math.random().toString(36).slice(2, 7);
+  return `<div class="field">
+    <label>${label}</label>
+    <div class="icon-field-row">
+      <input type="text" name="${name}" value="${esc(value)}"
+        placeholder="https://logo.clearbit.com/company.com"
+        oninput="(function(el){var img=document.getElementById('${pid}');if(img){img.src=el.value||'';img.style.opacity=el.value?'1':'0';}})(this)">
+      <div class="icon-field-preview">
+        <img id="${pid}" src="${esc(value)}" alt="preview"
+          style="opacity:${value ? '1' : '0'}"
+          onerror="this.style.opacity='0'" onload="this.style.opacity='1'">
+      </div>
+    </div>
+  </div>`;
 }
 
 window.saveItem = async function(e, section, id) {
