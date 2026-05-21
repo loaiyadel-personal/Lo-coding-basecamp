@@ -4,6 +4,7 @@ const cors        = require('cors');
 const helmet      = require('helmet');
 const morgan      = require('morgan');
 const rateLimit   = require('express-rate-limit');
+const path        = require('path');
 
 const connectDB      = require('./config/db');
 const cvRoutes       = require('./routes/cv.routes');
@@ -18,8 +19,15 @@ connectDB();
 // ─── App ──────────────────────────────────────────────────────────────────────
 const app = express();
 
+// ─── Static files (Admin Dashboard) ──────────────────────────────────────────
+app.use(express.static(path.join(__dirname, '../public'), {
+  // Don't cache admin files during development
+  etag: false,
+  maxAge: 0,
+}));
+
 // ─── Security & Logging ───────────────────────────────────────────────────────
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));  // CSP off for admin inline scripts
 app.use(cors({ origin: '*' }));   // Tighten to your frontend URL in production
 app.use(morgan('dev'));
 
