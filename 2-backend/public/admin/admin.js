@@ -267,24 +267,146 @@ $('#modalOverlay').addEventListener('click', e => {
    ══════════════════════════════════════════════════════════ */
 let visitsChartInstance = null;
 
+/* ── Country flag from ISO code ─────────────────────────── */
+function countryFlag(code) {
+  if (!code || code.length !== 2 || code === 'XX') return '🌐';
+  return String.fromCodePoint(
+    ...code.toUpperCase().split('').map(c => 0x1F1E6 + c.charCodeAt(0) - 65)
+  );
+}
+
+/* ── Relative time ──────────────────────────────────────── */
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1)  return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+/* ── Device icon SVG ────────────────────────────────────── */
+function deviceIcon(device) {
+  const icons = {
+    desktop: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
+    mobile:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>`,
+    tablet:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>`,
+  };
+  return icons[device] || icons.desktop;
+}
+
 async function loadAnalytics() {
   $('#analyticsStats').innerHTML =
     statCard('Loading…','—') + statCard('—','—') + statCard('—','—') + statCard('—','—');
   try {
     const { data } = await apiFetch('/admin/analytics');
-    const { totalViews, uniqueVisitors, todayViews, todayUnique, visitsByDay, topReferrers } = data;
+    const {
+      totalViews, uniqueVisitors, todayViews, todayUnique,
+      visitsByDay, topReferrers, topCountries, deviceBreakdown, browserBreakdown, recentVisitors,
+    } = data;
 
+    // ── Row 1: Core stats ──────────────────────────────────
     $('#analyticsStats').innerHTML =
       statCard('Total Page Views',   totalViews,     'accent') +
       statCard('Unique Visitors',    uniqueVisitors, 'green')  +
       statCard('Views Today',        todayViews,     'amber')  +
       statCard('Unique Today',       todayUnique,    '');
 
+    // ── Row 2: Device breakdown ────────────────────────────
+    const devMap  = Object.fromEntries((deviceBreakdown || []).map(d => [d._id, d.count]));
+    const bwsMap  = Object.fromEntries((browserBreakdown || []).map(b => [b._id, b.count]));
+    const total   = (devMap.desktop || 0) + (devMap.mobile || 0) + (devMap.tablet || 0);
+    function devPct(n) { return total ? Math.round((n / total) * 100) : 0; }
+
+    const topBrowsers = (browserBreakdown || []).slice(0, 3)
+      .map(b => `<span class="browser-pill">${esc(b._id)} <strong>${b.count}</strong></span>`).join('');
+
+    $('#deviceStats').innerHTML =
+      `<div class="stat-card device-card">
+        ${deviceIcon('desktop')}
+        <div class="stat-label">Desktop</div>
+        <div class="stat-value">${devMap.desktop || 0}</div>
+        <div class="device-pct">${devPct(devMap.desktop || 0)}%</div>
+      </div>` +
+      `<div class="stat-card device-card">
+        ${deviceIcon('mobile')}
+        <div class="stat-label">Mobile</div>
+        <div class="stat-value">${devMap.mobile || 0}</div>
+        <div class="device-pct">${devPct(devMap.mobile || 0)}%</div>
+      </div>` +
+      `<div class="stat-card device-card">
+        ${deviceIcon('tablet')}
+        <div class="stat-label">Tablet</div>
+        <div class="stat-value">${devMap.tablet || 0}</div>
+        <div class="device-pct">${devPct(devMap.tablet || 0)}%</div>
+      </div>` +
+      `<div class="stat-card" style="flex:2">
+        <div class="stat-label">Browsers</div>
+        <div class="browser-pills">${topBrowsers || '<span style="color:var(--text-muted);font-size:.8rem">No data yet</span>'}</div>
+      </div>`;
+
+    // ── Chart ──────────────────────────────────────────────
     renderChart(visitsByDay);
+
+    // ── Countries ──────────────────────────────────────────
+    renderCountries(topCountries);
+
+    // ── Referrers ──────────────────────────────────────────
     renderReferrers(topReferrers);
+
+    // ── Recent visitors table ──────────────────────────────
+    renderRecentVisitors(recentVisitors);
+
   } catch (err) {
     $('#analyticsStats').innerHTML = `<div class="empty">Could not load analytics</div>`;
   }
+}
+
+function renderCountries(data) {
+  const el = $('#countryList');
+  if (!data || !data.length) { el.innerHTML = '<div class="empty">No location data yet — geo resolves within ~5 s of each visit</div>'; return; }
+  const max = data[0].count;
+  el.innerHTML = data.map(r => `
+    <div class="referrer-item">
+      <span class="referrer-url">
+        <span style="font-size:1.1rem;margin-right:.35rem">${countryFlag(r.countryCode)}</span>
+        ${esc(r._id)}
+      </span>
+      <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0">
+        <div class="country-bar" style="width:${Math.round((r.count/max)*60)}px"></div>
+        <span class="referrer-count">${r.count}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderRecentVisitors(data) {
+  const tbody = $('#visitorsBody');
+  if (!data || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No visits recorded yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(v => {
+    const loc = [v.city, v.country].filter(Boolean).join(', ') || '—';
+    const flag = countryFlag(v.countryCode);
+    // Mask last octet of IP for display
+    const ip   = (v.ip || '').replace(/^::ffff:/, '').replace(/(\d+)$/, '***') || '—';
+    const ref  = v.referrer
+      ? `<span title="${esc(v.referrer)}" style="max-width:120px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle">${esc(v.referrer.replace(/^https?:\/\//, ''))}</span>`
+      : '<span style="color:var(--text-muted)">Direct</span>';
+    return `<tr>
+      <td style="white-space:nowrap;color:var(--text-muted)">${timeAgo(v.createdAt)}</td>
+      <td><span style="font-size:1rem;margin-right:.3rem">${flag}</span>${esc(loc)}</td>
+      <td>
+        <span class="device-tag">${deviceIcon(v.device)}<span>${esc(v.device || '—')}</span></span>
+      </td>
+      <td>${esc(v.browser || '—')} / ${esc(v.os || '—')}</td>
+      <td>${ref}</td>
+      <td style="font-family:monospace;font-size:.78rem;color:var(--text-muted)">${esc(ip)}</td>
+      <td><span class="pill ${v.isUnique ? 'pill-new' : 'pill-read'}">${v.isUnique ? 'New' : 'Return'}</span></td>
+    </tr>`;
+  }).join('');
 }
 
 function renderChart(data) {

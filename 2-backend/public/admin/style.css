@@ -429,6 +429,55 @@ textarea { resize: vertical; }
 }
 @media(max-width: 900px) { .analytics-grid { grid-template-columns: 1fr; } }
 
+/* Device stat cards */
+.device-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: .2rem;
+}
+.device-card svg { color: var(--sky); margin-bottom: .2rem; width: 20px; height: 20px; }
+.device-pct { font-size: .75rem; color: var(--text-muted); margin-top: -.2rem; }
+
+/* Browser pills row */
+.browser-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-top: .4rem;
+}
+.browser-pill {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: .75rem;
+  color: var(--text-mid);
+  padding: 2px 8px;
+}
+.browser-pill strong { color: var(--text); }
+
+/* Country bar */
+.country-bar {
+  height: 4px;
+  background: var(--sky);
+  border-radius: 999px;
+  opacity: .5;
+  min-width: 4px;
+  transition: width 400ms ease;
+}
+
+/* Recent visitors device tag */
+.device-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .82rem;
+  color: var(--text-mid);
+  text-transform: capitalize;
+}
+.device-tag svg { flex-shrink: 0; }
+
 .chart-card { padding-bottom: 0; }
 
 .chart-header {

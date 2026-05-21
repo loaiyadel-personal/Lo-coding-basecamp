@@ -101,7 +101,14 @@
 
     <!-- ── ANALYTICS TAB ── -->
     <section class="tab" id="tab-analytics" hidden>
+
+      <!-- Row 1: Core stats -->
       <div class="stats-row" id="analyticsStats"></div>
+
+      <!-- Row 2: Device breakdown -->
+      <div class="stats-row" id="deviceStats"></div>
+
+      <!-- Row 3: Chart + Countries + Referrers -->
       <div class="analytics-grid">
         <div class="card chart-card">
           <div class="chart-header">
@@ -118,13 +125,49 @@
             </div>
           </div>
         </div>
-        <div class="card">
-          <h3 class="card-title">Top Referrers</h3>
-          <div id="referrerList" class="referrer-list">
-            <div class="empty">No referrer data yet</div>
+
+        <div style="display:flex;flex-direction:column;gap:1.25rem">
+          <div class="card">
+            <h3 class="card-title">🌍 Top Countries</h3>
+            <div id="countryList" class="referrer-list">
+              <div class="empty">No location data yet</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="card-title">↗ Top Referrers</h3>
+            <div id="referrerList" class="referrer-list">
+              <div class="empty">No referrer data yet</div>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- Row 4: Recent visitors table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title" style="padding:0">Recent Visitors</h3>
+          <span style="font-size:.78rem;color:var(--text-muted)">Last 25 visits</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="visitorsTable">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Location</th>
+                <th>Device</th>
+                <th>Browser / OS</th>
+                <th>Referrer</th>
+                <th>IP</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody id="visitorsBody">
+              <tr><td colspan="7" class="empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </section>
 
     <!-- ── CV EDITOR TAB ── -->
