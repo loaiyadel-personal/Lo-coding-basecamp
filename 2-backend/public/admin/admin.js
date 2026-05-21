@@ -445,9 +445,16 @@ async function loadProfile() {
     if (!data) return;
     _profileId = data._id;
     const form = $('#profileForm');
-    ['name','title','subtitle','email','phone','location','linkedin','statusChip','bio','contactNote'].forEach(k => {
+    ['name','title','subtitle','email','phone','location','linkedin','statusChip','bio','contactNote','photo'].forEach(k => {
       if (form.elements[k]) form.elements[k].value = data[k] || '';
     });
+    // Populate photo preview
+    const photoInput = form.elements['photo'];
+    const photoPreview = document.getElementById('photoPreview');
+    if (photoPreview && photoInput && photoInput.value) {
+      photoPreview.src = photoInput.value;
+      photoPreview.style.opacity = '1';
+    }
     // Populate stats fields
     if (data.stats && data.stats.length) {
       data.stats.forEach((s, i) => {
@@ -465,7 +472,7 @@ $('#profileForm').addEventListener('submit', async (e) => {
   const status = $('#profileSaveStatus');
   const form   = e.target;
   const body   = {};
-  ['name','title','subtitle','email','phone','location','linkedin','statusChip','bio','contactNote'].forEach(k => {
+  ['name','title','subtitle','email','phone','location','linkedin','statusChip','bio','contactNote','photo'].forEach(k => {
     body[k] = form.elements[k]?.value || '';
   });
   // Build stats array from the 4 stat pairs

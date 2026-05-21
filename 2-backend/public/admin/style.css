@@ -626,6 +626,32 @@ textarea { resize: vertical; }
 .item-sub   { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
 .item-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
 
+/* ── Profile photo field (URL + circular preview) ──────── */
+.photo-field-row {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+}
+.photo-field-row input { flex: 1; }
+.photo-preview-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid var(--border-mid);
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-preview-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 200ms ease;
+}
+
 /* ── Icon field (URL + live preview) in modals ──────────── */
 .icon-field-row {
   display: flex;

@@ -141,6 +141,22 @@
         <div class="card">
           <h3 class="card-title">Edit Profile</h3>
           <form class="edit-form" id="profileForm">
+
+            <!-- ── Profile photo ── -->
+            <div class="field full">
+              <label>Profile Photo URL</label>
+              <div class="photo-field-row">
+                <input type="text" name="photo" id="photoUrlInput"
+                  placeholder="https://… or leave blank to use local IMG_2141.jpeg"
+                  oninput="(function(el){var img=document.getElementById('photoPreview');img.src=el.value||'';img.style.opacity=el.value?'1':'0.3';})(this)">
+                <div class="photo-preview-wrap">
+                  <img id="photoPreview" src="" alt="Profile photo preview"
+                    style="opacity:0.3"
+                    onerror="this.style.opacity='0.3'" onload="this.style.opacity='1'">
+                </div>
+              </div>
+            </div>
+
             <div class="form-grid">
               <div class="field"><label>Full Name</label><input type="text" name="name"></div>
               <div class="field"><label>Title</label><input type="text" name="title"></div>

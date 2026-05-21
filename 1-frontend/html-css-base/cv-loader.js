@@ -26,6 +26,12 @@
   function applyProfile(p) {
     if (!p) return;
 
+    // Profile photo
+    if (p.photo) {
+      const picEl = document.querySelector('.profile-pic');
+      if (picEl) picEl.src = p.photo;
+    }
+
     // Hero name
     const nameEl = document.querySelector('.hero-name');
     if (nameEl && p.name) nameEl.textContent = p.name;
