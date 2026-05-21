@@ -201,6 +201,19 @@ const getAnalytics = async (req, res, next) => {
         topCountries, deviceBreakdown, browserBreakdown, recentVisitors,
       },
     });
+
+    // ── Background backfill: parse UA for old visits missing device field ──
+    Visit.find({ userAgent: { $exists: true, $ne: '' }, device: { $exists: false } })
+      .limit(200).lean()
+      .then(old => {
+        old.forEach(v => {
+          const parsed = parseUA(v.userAgent);
+          Visit.findByIdAndUpdate(v._id, parsed).exec().catch(() => {});
+        });
+        if (old.length) console.log(`Backfilled device/browser/os for ${old.length} visits`);
+      })
+      .catch(() => {});
+
   } catch (err) {
     next(err);
   }

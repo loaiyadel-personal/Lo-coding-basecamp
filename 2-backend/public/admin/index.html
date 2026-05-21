@@ -105,40 +105,57 @@
       <!-- Row 1: Core stats -->
       <div class="stats-row" id="analyticsStats"></div>
 
-      <!-- Row 2: Device breakdown -->
-      <div class="stats-row" id="deviceStats"></div>
-
-      <!-- Row 3: Chart + Countries + Referrers -->
+      <!-- Row 2: Line chart + Countries -->
       <div class="analytics-grid">
         <div class="card chart-card">
           <div class="chart-header">
-            <h3 class="card-title" style="padding:0">Visits — Last 30 Days</h3>
-            <div class="chart-legend">
-              <span class="legend-dot" style="background:#0272c0"></span> Page views
-              <span class="legend-dot" style="background:#22c55e;margin-left:.75rem"></span> Unique visitors
+            <div>
+              <div class="chart-title">Visits — Last 30 Days</div>
+              <div class="chart-sub">Page views &amp; unique visitors over time</div>
+            </div>
+            <div style="display:flex;gap:1rem">
+              <div class="chart-legend"><span class="legend-dot" style="background:#0272c0"></span> Views</div>
+              <div class="chart-legend"><span class="legend-dot" style="background:#22c55e"></span> Unique</div>
             </div>
           </div>
           <div class="chart-wrap">
             <canvas id="visitsChart"></canvas>
-            <div class="chart-empty" id="chartEmpty" hidden>
-              No visits yet — open your CV page to see data here.
-            </div>
+            <div class="chart-empty" id="chartEmpty" hidden>No visits yet — open your CV page to see data here.</div>
           </div>
         </div>
+        <div class="card">
+          <h3 class="card-title">🌍 Top Countries</h3>
+          <div id="countryList" class="referrer-list"><div class="empty">No location data yet</div></div>
+        </div>
+      </div>
 
-        <div style="display:flex;flex-direction:column;gap:1.25rem">
-          <div class="card">
-            <h3 class="card-title">🌍 Top Countries</h3>
-            <div id="countryList" class="referrer-list">
-              <div class="empty">No location data yet</div>
-            </div>
+      <!-- Row 3: Device donut + Browser donut + Referrers -->
+      <div class="analytics-lower">
+        <div class="card donut-card">
+          <div class="donut-card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            Device Types
           </div>
-          <div class="card">
-            <h3 class="card-title">↗ Top Referrers</h3>
-            <div id="referrerList" class="referrer-list">
-              <div class="empty">No referrer data yet</div>
-            </div>
+          <div class="donut-wrap">
+            <canvas id="deviceChart"></canvas>
+            <div class="donut-empty" id="deviceEmpty">No data yet</div>
           </div>
+          <div class="donut-legend" id="deviceLegend"></div>
+        </div>
+        <div class="card donut-card">
+          <div class="donut-card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Browsers
+          </div>
+          <div class="donut-wrap">
+            <canvas id="browserChart"></canvas>
+            <div class="donut-empty" id="browserEmpty">No data yet</div>
+          </div>
+          <div class="donut-legend" id="browserLegend"></div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">↗ Top Referrers</h3>
+          <div id="referrerList" class="referrer-list"><div class="empty">No referrer data yet</div></div>
         </div>
       </div>
 
@@ -146,24 +163,17 @@
       <div class="card">
         <div class="card-header">
           <h3 class="card-title" style="padding:0">Recent Visitors</h3>
-          <span style="font-size:.78rem;color:var(--text-muted)">Last 25 visits</span>
+          <span style="font-size:.78rem;color:var(--text-muted)">Last 25 · location resolves within ~5 s of visit</span>
         </div>
         <div class="table-wrap">
-          <table class="data-table" id="visitorsTable">
+          <table class="data-table">
             <thead>
               <tr>
-                <th>Time</th>
-                <th>Location</th>
-                <th>Device</th>
-                <th>Browser / OS</th>
-                <th>Referrer</th>
-                <th>IP</th>
-                <th>Type</th>
+                <th>Time</th><th>Location</th><th>Device</th>
+                <th>Browser / OS</th><th>Referrer</th><th>IP</th><th>Type</th>
               </tr>
             </thead>
-            <tbody id="visitorsBody">
-              <tr><td colspan="7" class="empty">Loading…</td></tr>
-            </tbody>
+            <tbody id="visitorsBody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>

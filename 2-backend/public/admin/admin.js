@@ -265,17 +265,19 @@ $('#modalOverlay').addEventListener('click', e => {
 /* ══════════════════════════════════════════════════════════
    ANALYTICS
    ══════════════════════════════════════════════════════════ */
-let visitsChartInstance = null;
+let visitsChartInstance  = null;
+let deviceChartInstance  = null;
+let browserChartInstance = null;
 
-/* ── Country flag from ISO code ─────────────────────────── */
+const CHART_COLORS = ['#0272c0','#22c55e','#f59e0b','#a78bfa','#f87171','#38bdf8'];
+
+/* ── Helpers ────────────────────────────────────────────── */
 function countryFlag(code) {
   if (!code || code.length !== 2 || code === 'XX') return '🌐';
   return String.fromCodePoint(
     ...code.toUpperCase().split('').map(c => 0x1F1E6 + c.charCodeAt(0) - 65)
   );
 }
-
-/* ── Relative time ──────────────────────────────────────── */
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
@@ -285,17 +287,16 @@ function timeAgo(dateStr) {
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
 }
-
-/* ── Device icon SVG ────────────────────────────────────── */
 function deviceIcon(device) {
   const icons = {
-    desktop: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
-    mobile:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>`,
-    tablet:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>`,
+    desktop: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
+    mobile:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>`,
+    tablet:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg>`,
   };
-  return icons[device] || icons.desktop;
+  return icons[device] || '';
 }
 
+/* ── Load & render ──────────────────────────────────────── */
 async function loadAnalytics() {
   $('#analyticsStats').innerHTML =
     statCard('Loading…','—') + statCard('—','—') + statCard('—','—') + statCard('—','—');
@@ -306,56 +307,18 @@ async function loadAnalytics() {
       visitsByDay, topReferrers, topCountries, deviceBreakdown, browserBreakdown, recentVisitors,
     } = data;
 
-    // ── Row 1: Core stats ──────────────────────────────────
     $('#analyticsStats').innerHTML =
       statCard('Total Page Views',   totalViews,     'accent') +
       statCard('Unique Visitors',    uniqueVisitors, 'green')  +
       statCard('Views Today',        todayViews,     'amber')  +
       statCard('Unique Today',       todayUnique,    '');
 
-    // ── Row 2: Device breakdown ────────────────────────────
-    const devMap  = Object.fromEntries((deviceBreakdown || []).map(d => [d._id, d.count]));
-    const bwsMap  = Object.fromEntries((browserBreakdown || []).map(b => [b._id, b.count]));
-    const total   = (devMap.desktop || 0) + (devMap.mobile || 0) + (devMap.tablet || 0);
-    function devPct(n) { return total ? Math.round((n / total) * 100) : 0; }
-
-    const topBrowsers = (browserBreakdown || []).slice(0, 3)
-      .map(b => `<span class="browser-pill">${esc(b._id)} <strong>${b.count}</strong></span>`).join('');
-
-    $('#deviceStats').innerHTML =
-      `<div class="stat-card device-card">
-        ${deviceIcon('desktop')}
-        <div class="stat-label">Desktop</div>
-        <div class="stat-value">${devMap.desktop || 0}</div>
-        <div class="device-pct">${devPct(devMap.desktop || 0)}%</div>
-      </div>` +
-      `<div class="stat-card device-card">
-        ${deviceIcon('mobile')}
-        <div class="stat-label">Mobile</div>
-        <div class="stat-value">${devMap.mobile || 0}</div>
-        <div class="device-pct">${devPct(devMap.mobile || 0)}%</div>
-      </div>` +
-      `<div class="stat-card device-card">
-        ${deviceIcon('tablet')}
-        <div class="stat-label">Tablet</div>
-        <div class="stat-value">${devMap.tablet || 0}</div>
-        <div class="device-pct">${devPct(devMap.tablet || 0)}%</div>
-      </div>` +
-      `<div class="stat-card" style="flex:2">
-        <div class="stat-label">Browsers</div>
-        <div class="browser-pills">${topBrowsers || '<span style="color:var(--text-muted);font-size:.8rem">No data yet</span>'}</div>
-      </div>`;
-
-    // ── Chart ──────────────────────────────────────────────
     renderChart(visitsByDay);
-
-    // ── Countries ──────────────────────────────────────────
     renderCountries(topCountries);
-
-    // ── Referrers ──────────────────────────────────────────
     renderReferrers(topReferrers);
-
-    // ── Recent visitors table ──────────────────────────────
+    renderDonut('device',  deviceBreakdown,  ['Desktop','Mobile','Tablet'],
+                           d => d._id === 'desktop' ? 'Desktop' : d._id === 'mobile' ? 'Mobile' : 'Tablet');
+    renderDonut('browser', browserBreakdown, null, d => d._id);
     renderRecentVisitors(recentVisitors);
 
   } catch (err) {
@@ -363,47 +326,132 @@ async function loadAnalytics() {
   }
 }
 
+/* ── Doughnut chart ─────────────────────────────────────── */
+function renderDonut(type, breakdown, orderedLabels, labelFn) {
+  const canvas   = $(`#${type}Chart`);
+  const emptyEl  = $(`#${type}Empty`);
+  const legendEl = $(`#${type}Legend`);
+
+  // Destroy old instance
+  if (type === 'device'  && deviceChartInstance)  { deviceChartInstance.destroy();  deviceChartInstance  = null; }
+  if (type === 'browser' && browserChartInstance) { browserChartInstance.destroy(); browserChartInstance = null; }
+
+  const items = (breakdown || []).filter(d => d._id);
+  if (!items.length) {
+    canvas.hidden  = true;
+    if (emptyEl) emptyEl.hidden = false;
+    if (legendEl) legendEl.innerHTML = '';
+    return;
+  }
+  canvas.hidden = false;
+  if (emptyEl) emptyEl.hidden = true;
+
+  // Sort by count desc, use ordered labels if provided
+  const sorted = orderedLabels
+    ? orderedLabels.map(l => items.find(d => labelFn(d) === l) || { _id: l, count: 0 }).filter(d => d.count > 0)
+    : [...items].sort((a, b) => b.count - a.count);
+
+  const labels = sorted.map(labelFn);
+  const values = sorted.map(d => d.count);
+  const total  = values.reduce((a, b) => a + b, 0);
+  const colors = CHART_COLORS.slice(0, labels.length);
+
+  const tooltipDefaults = {
+    backgroundColor: '#0d1829',
+    borderColor:     'rgba(255,255,255,0.12)',
+    borderWidth:     1,
+    titleColor:      '#e8eef5',
+    bodyColor:       '#b0c4d8',
+    padding:         10,
+    cornerRadius:    8,
+  };
+
+  const instance = new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data:            values,
+        backgroundColor: colors,
+        borderColor:     '#111d2e',
+        borderWidth:     3,
+        hoverOffset:     6,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      animation: { duration: 500, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...tooltipDefaults,
+          callbacks: {
+            label: item => ` ${item.label}: ${item.parsed}  (${Math.round(item.parsed / total * 100)}%)`,
+          },
+        },
+      },
+    },
+  });
+
+  if (type === 'device')  deviceChartInstance  = instance;
+  if (type === 'browser') browserChartInstance = instance;
+
+  // Custom HTML legend
+  if (legendEl) {
+    legendEl.innerHTML = labels.map((l, i) => `
+      <span class="donut-legend-item">
+        <span class="legend-dot" style="background:${colors[i]}"></span>
+        ${esc(l)} <strong>${values[i]}</strong>
+        <span class="legend-pct">${Math.round(values[i]/total*100)}%</span>
+      </span>
+    `).join('');
+  }
+}
+
+/* ── Countries ──────────────────────────────────────────── */
 function renderCountries(data) {
   const el = $('#countryList');
-  if (!data || !data.length) { el.innerHTML = '<div class="empty">No location data yet — geo resolves within ~5 s of each visit</div>'; return; }
+  if (!data || !data.length) {
+    el.innerHTML = '<div class="empty" style="padding:1rem 1.25rem">No geo data yet — resolves ~5 s after each visit</div>';
+    return;
+  }
   const max = data[0].count;
   el.innerHTML = data.map(r => `
     <div class="referrer-item">
       <span class="referrer-url">
-        <span style="font-size:1.1rem;margin-right:.35rem">${countryFlag(r.countryCode)}</span>
+        <span style="font-size:1.1rem;margin-right:.4rem;line-height:1">${countryFlag(r.countryCode)}</span>
         ${esc(r._id)}
       </span>
       <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0">
-        <div class="country-bar" style="width:${Math.round((r.count/max)*60)}px"></div>
+        <div class="country-bar" style="width:${Math.max(4, Math.round((r.count/max)*64))}px"></div>
         <span class="referrer-count">${r.count}</span>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
+/* ── Recent visitors ────────────────────────────────────── */
 function renderRecentVisitors(data) {
   const tbody = $('#visitorsBody');
   if (!data || !data.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty">No visits recorded yet</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No visits yet</td></tr>';
     return;
   }
   tbody.innerHTML = data.map(v => {
-    const loc = [v.city, v.country].filter(Boolean).join(', ') || '—';
+    const loc  = [v.city, v.country].filter(Boolean).join(', ') || '—';
     const flag = countryFlag(v.countryCode);
-    // Mask last octet of IP for display
-    const ip   = (v.ip || '').replace(/^::ffff:/, '').replace(/(\d+)$/, '***') || '—';
+    const ip   = (v.ip || '').replace(/^::ffff:/, '').replace(/(\.\d+)$/, '.***').replace(/(:[0-9a-f]+)$/i, ':***') || '—';
     const ref  = v.referrer
-      ? `<span title="${esc(v.referrer)}" style="max-width:120px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle">${esc(v.referrer.replace(/^https?:\/\//, ''))}</span>`
+      ? `<span title="${esc(v.referrer)}" class="ref-cell">${esc(v.referrer.replace(/^https?:\/\//, '').replace(/\?.*/,''))}</span>`
       : '<span style="color:var(--text-muted)">Direct</span>';
     return `<tr>
-      <td style="white-space:nowrap;color:var(--text-muted)">${timeAgo(v.createdAt)}</td>
-      <td><span style="font-size:1rem;margin-right:.3rem">${flag}</span>${esc(loc)}</td>
-      <td>
-        <span class="device-tag">${deviceIcon(v.device)}<span>${esc(v.device || '—')}</span></span>
-      </td>
-      <td>${esc(v.browser || '—')} / ${esc(v.os || '—')}</td>
+      <td style="white-space:nowrap;color:var(--text-muted);font-size:.8rem">${timeAgo(v.createdAt)}</td>
+      <td><span style="font-size:1rem;margin-right:.3rem">${flag}</span><span style="font-size:.85rem">${esc(loc)}</span></td>
+      <td><span class="device-tag">${deviceIcon(v.device)}&nbsp;${esc(v.device||'—')}</span></td>
+      <td style="font-size:.82rem">${esc(v.browser||'—')} <span style="color:var(--text-muted)">/ ${esc(v.os||'—')}</span></td>
       <td>${ref}</td>
-      <td style="font-family:monospace;font-size:.78rem;color:var(--text-muted)">${esc(ip)}</td>
+      <td style="font-family:monospace;font-size:.75rem;color:var(--text-muted)">${esc(ip)}</td>
       <td><span class="pill ${v.isUnique ? 'pill-new' : 'pill-read'}">${v.isUnique ? 'New' : 'Return'}</span></td>
     </tr>`;
   }).join('');
