@@ -66,10 +66,10 @@
     </p>
 
     <div class="hero-stats" role="list" aria-label="Career highlights">
-      <div class="stat-col" role="listitem"><div class="stat-n">11<sup>+</sup></div><div class="stat-l">Years in Agile</div></div>
-      <div class="stat-col" role="listitem"><div class="stat-n">6</div><div class="stat-l">Enterprises Served</div></div>
-      <div class="stat-col" role="listitem"><div class="stat-n">3</div><div class="stat-l">Scaled Frameworks</div></div>
-      <div class="stat-col" role="listitem"><div class="stat-n">4</div><div class="stat-l">Certifications</div></div>
+      <div class="stat-col stat" role="listitem"><div class="stat-n"><span class="stat-num">11</span><sup>+</sup></div><div class="stat-l">Years in Agile</div></div>
+      <div class="stat-col stat" role="listitem"><div class="stat-n"><span class="stat-num">6</span></div><div class="stat-l">Enterprises Served</div></div>
+      <div class="stat-col stat" role="listitem"><div class="stat-n"><span class="stat-num">3</span></div><div class="stat-l">Scaled Frameworks</div></div>
+      <div class="stat-col stat" role="listitem"><div class="stat-n"><span class="stat-num">4</span></div><div class="stat-l">Certifications</div></div>
     </div>
   </div>
 </header>
@@ -469,6 +469,40 @@
   </aside>
 </div><!-- /page-grid -->
 
+<!-- ════════════════════════  CONTACT FORM  ════════════════════════ -->
+<section class="contact-section" id="contact" aria-label="Contact me">
+  <div class="contact-inner">
+    <h2 class="contact-heading">Get In Touch</h2>
+    <p class="contact-sub">I'm open to senior Agile &amp; Delivery roles. Drop me a message and I'll get back to you promptly.</p>
+
+    <form class="contact-form" id="contactForm" novalidate>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cf-name">Name <span aria-hidden="true">*</span></label>
+          <input type="text" id="cf-name" name="name" placeholder="Your full name" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="cf-email">Email <span aria-hidden="true">*</span></label>
+          <input type="email" id="cf-email" name="email" placeholder="you@example.com" required autocomplete="email">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="cf-subject">Subject</label>
+        <input type="text" id="cf-subject" name="subject" placeholder="Regarding a Senior Scrum Master role…">
+      </div>
+      <div class="form-group">
+        <label for="cf-body">Message <span aria-hidden="true">*</span></label>
+        <textarea id="cf-body" name="body" rows="5" placeholder="Tell me about the opportunity…" required></textarea>
+      </div>
+      <button type="submit" class="contact-btn" id="contactBtn">
+        <span class="btn-label">Send Message</span>
+        <span class="btn-spinner" aria-hidden="true" hidden></span>
+      </button>
+      <p class="form-status" id="formStatus" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
 <!-- ════════════════════════  FOOTER  ════════════════════════ -->
 <footer role="contentinfo">
   <div class="foot-inner">
@@ -476,6 +510,76 @@
     <span class="foot-right">Senior Scrum Master &amp; Agile Project Manager &middot; <a href="mailto:loaiy.adel@gmail.com">loaiy.adel@gmail.com</a></span>
   </div>
 </footer>
+
+<!-- ════════════════════════  APP / MOTION SCRIPT  ════════════════════════ -->
+<script src="app.js" defer></script>
+
+<!-- ════════════════════════  API SCRIPTS  ════════════════════════ -->
+<script>
+  const API = 'http://localhost:5000/api';
+
+  // ── Analytics: track this page view ──────────────────────────────────────
+  fetch(`${API}/analytics/track`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/', referrer: document.referrer }),
+  }).catch(() => {/* server not up yet — silent fail */});
+
+  // ── Contact form ──────────────────────────────────────────────────────────
+  const form    = document.getElementById('contactForm');
+  const btn     = document.getElementById('contactBtn');
+  const label   = btn.querySelector('.btn-label');
+  const spinner = btn.querySelector('.btn-spinner');
+  const status  = document.getElementById('formStatus');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    status.textContent = '';
+    status.className   = 'form-status';
+
+    const data = {
+      name:    form.elements['name'].value.trim(),
+      email:   form.elements['email'].value.trim(),
+      subject: form.elements['subject'].value.trim(),
+      body:    form.elements['body'].value.trim(),
+    };
+
+    if (!data.name || !data.email || !data.body) {
+      status.textContent = 'Please fill in all required fields.';
+      status.classList.add('form-status--error');
+      return;
+    }
+
+    // Loading state
+    btn.disabled    = true;
+    label.hidden    = true;
+    spinner.hidden  = false;
+
+    try {
+      const res = await fetch(`${API}/contact`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(data),
+      });
+      const json = await res.json();
+
+      if (res.ok) {
+        status.textContent = '✅ Message sent — thank you! I\'ll be in touch soon.';
+        status.classList.add('form-status--success');
+        form.reset();
+      } else {
+        throw new Error(json.message || 'Something went wrong');
+      }
+    } catch (err) {
+      status.textContent = `❌ ${err.message}`;
+      status.classList.add('form-status--error');
+    } finally {
+      btn.disabled   = false;
+      label.hidden   = false;
+      spinner.hidden = true;
+    }
+  });
+</script>
 
 </body>
 </html>

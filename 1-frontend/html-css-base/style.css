@@ -571,3 +571,209 @@ footer{
   .exp-card{padding:1.2rem;}
   .side-card{padding:1.1rem;}
 }
+/* ════════════════════════  CONTACT SECTION  ════════════════════════ */
+.contact-section{
+  background:var(--ink-900,#080f1e);
+  padding:4rem 1.5rem 4.5rem;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.contact-inner{
+  max-width:680px;
+  margin:0 auto;
+}
+.contact-heading{
+  font-family:var(--font-display);
+  color:#fff;
+  font-size:clamp(1.5rem,3vw,2.1rem);
+  font-weight:700;
+  margin:0 0 .5rem;
+}
+.contact-sub{
+  color:var(--ink-400,#8fa4be);
+  margin:0 0 2rem;
+  font-size:.95rem;
+  line-height:1.6;
+}
+.contact-form{display:flex;flex-direction:column;gap:1.1rem;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:560px){.form-row{grid-template-columns:1fr;}}
+.form-group{display:flex;flex-direction:column;gap:.4rem;}
+.form-group label{
+  color:var(--ink-300,#b0c4d8);
+  font-size:.83rem;
+  font-weight:600;
+  letter-spacing:.03em;
+}
+.form-group label span{color:var(--brand,#0272c0);}
+.form-group input,
+.form-group textarea{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:var(--radius-md,8px);
+  color:#e8eef5;
+  font-family:var(--font-body);
+  font-size:.9rem;
+  padding:.65rem .9rem;
+  transition:border-color var(--t-fast),box-shadow var(--t-fast);
+  outline:none;
+  resize:vertical;
+}
+.form-group input::placeholder,
+.form-group textarea::placeholder{color:rgba(255,255,255,.25);}
+.form-group input:focus,
+.form-group textarea:focus{
+  border-color:var(--brand,#0272c0);
+  box-shadow:0 0 0 3px rgba(2,114,192,.2);
+}
+.contact-btn{
+  align-self:flex-start;
+  background:var(--brand,#0272c0);
+  border:none;
+  border-radius:var(--radius-md,8px);
+  color:#fff;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:.5rem;
+  font-family:var(--font-body);
+  font-size:.92rem;
+  font-weight:600;
+  padding:.72rem 1.6rem;
+  transition:background var(--t-fast),transform var(--t-fast),box-shadow var(--t-fast);
+}
+.contact-btn:hover:not(:disabled){
+  background:#0260a8;
+  box-shadow:0 4px 16px rgba(2,114,192,.4);
+  transform:translateY(-1px);
+}
+.contact-btn:disabled{opacity:.65;cursor:not-allowed;}
+.btn-spinner{
+  width:16px;height:16px;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.form-status{
+  font-size:.88rem;
+  min-height:1.4em;
+  margin:0;
+}
+.form-status--success{color:#4ade80;}
+.form-status--error{color:#f87171;}
+
+/* ════════════════════════  MOTION SYSTEM (UI/UX Pro Max)  ════════════════════════
+   Design System: Motion-Driven style — scroll reveal, entrance, microinteractions
+   Source: .claude/skills/ui-ux-pro-max — applied 2026-05-21
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Scroll Reveal ───────────────────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity  var(--t-s, 380ms) var(--ease, cubic-bezier(0.16,1,0.3,1)),
+    transform var(--t-s, 380ms) var(--ease, cubic-bezier(0.16,1,0.3,1));
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media(prefers-reduced-motion: reduce) {
+  .reveal { opacity:1; transform:none; transition:none; }
+}
+
+/* ── Hero Entrance ───────────────────────────────────────────────────────── */
+.hero--ready .hero-child--animate {
+  animation: heroSlideUp var(--t-s, 380ms) var(--ease, cubic-bezier(0.16,1,0.3,1)) both;
+  animation-delay: calc(var(--stagger, 0) * 90ms + 80ms);
+}
+@keyframes heroSlideUp {
+  from { opacity:0; transform: translateY(28px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+@media(prefers-reduced-motion: reduce) {
+  .hero--ready .hero-child--animate { animation: none; }
+}
+
+/* ── Navbar Scrolled State ───────────────────────────────────────────────── */
+.navbar {
+  transition: box-shadow var(--t-m, 240ms) ease, backdrop-filter var(--t-m) ease;
+}
+.navbar--scrolled {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+  backdrop-filter: blur(12px);
+}
+
+/* ── Card Tilt (perspective container) ──────────────────────────────────── */
+.exp-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition:
+    transform var(--t-m, 240ms) var(--ease),
+    box-shadow var(--t-m, 240ms) var(--ease);
+}
+.exp-card:hover {
+  box-shadow: var(--sh-lg, 0 8px 36px rgba(8,15,30,.11));
+}
+
+/* ── Stats counter animation ─────────────────────────────────────────────── */
+.stat-num {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Skill tag stagger on hover ──────────────────────────────────────────── */
+.skill-tags .tag {
+  transition:
+    background var(--t-f, 140ms) ease,
+    transform   var(--t-f, 140ms) ease,
+    box-shadow  var(--t-f, 140ms) ease;
+}
+.skill-tags .tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(2,114,192,0.25);
+}
+
+/* ── Focus ring improvement (WCAG AA) ───────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--sky, #0272c0);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── cursor:pointer on all interactive elements ──────────────────────────── */
+.nav-link,
+.cred-item,
+.tag,
+.contact-btn,
+.lang-row {
+  cursor: pointer;
+}
+
+/* ── Design System tokens integration (from MASTER.md) ──────────────────── */
+:root {
+  /* UI/UX Pro Max — Professional navy + blue CTA palette */
+  --ds-primary:    #0F172A;
+  --ds-secondary:  #334155;
+  --ds-cta:        #0369A1;
+  --ds-bg:         #F8FAFC;
+  --ds-text:       #020617;
+
+  /* Spacing scale from design system */
+  --space-xs:  0.25rem;
+  --space-sm:  0.5rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* Shadow scale */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+}
