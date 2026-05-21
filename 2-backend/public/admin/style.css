@@ -5,6 +5,9 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Fix: CSS display rules override [hidden] attribute — force it back */
+[hidden] { display: none !important; }
+
 :root {
   --bg:         #080f1e;
   --surface:    #0d1829;

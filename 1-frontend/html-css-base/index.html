@@ -478,21 +478,25 @@
     <form class="contact-form" id="contactForm" novalidate>
       <div class="form-row">
         <div class="form-group">
-          <label for="cf-name">Name <span aria-hidden="true">*</span></label>
-          <input type="text" id="cf-name" name="name" placeholder="Your full name" required autocomplete="name">
+          <label for="cf-name">Name <span class="req-star" aria-hidden="true">*</span></label>
+          <input type="text" id="cf-name" name="name" placeholder="Your full name" autocomplete="name">
+          <span class="field-error" id="err-name" aria-live="polite"></span>
         </div>
         <div class="form-group">
-          <label for="cf-email">Email <span aria-hidden="true">*</span></label>
-          <input type="email" id="cf-email" name="email" placeholder="you@example.com" required autocomplete="email">
+          <label for="cf-email">Email <span class="req-star" aria-hidden="true">*</span></label>
+          <input type="email" id="cf-email" name="email" placeholder="you@example.com" autocomplete="email">
+          <span class="field-error" id="err-email" aria-live="polite"></span>
         </div>
       </div>
       <div class="form-group">
-        <label for="cf-subject">Subject</label>
+        <label for="cf-subject">Subject <span class="req-star" aria-hidden="true">*</span></label>
         <input type="text" id="cf-subject" name="subject" placeholder="Regarding a Senior Scrum Master role…">
+        <span class="field-error" id="err-subject" aria-live="polite"></span>
       </div>
       <div class="form-group">
-        <label for="cf-body">Message <span aria-hidden="true">*</span></label>
-        <textarea id="cf-body" name="body" rows="5" placeholder="Tell me about the opportunity…" required></textarea>
+        <label for="cf-body">Message <span class="req-star" aria-hidden="true">*</span></label>
+        <textarea id="cf-body" name="body" rows="5" placeholder="Tell me about the opportunity…"></textarea>
+        <span class="field-error" id="err-body" aria-live="polite"></span>
       </div>
       <button type="submit" class="contact-btn" id="contactBtn">
         <span class="btn-label">Send Message</span>
@@ -525,41 +529,82 @@
     body: JSON.stringify({ page: '/', referrer: document.referrer }),
   }).catch(() => {/* server not up yet — silent fail */});
 
-  // ── Contact form ──────────────────────────────────────────────────────────
+  // ── Contact form with inline validation ──────────────────────────────────
   const form    = document.getElementById('contactForm');
   const btn     = document.getElementById('contactBtn');
   const label   = btn.querySelector('.btn-label');
   const spinner = btn.querySelector('.btn-spinner');
   const status  = document.getElementById('formStatus');
 
+  // ── Validation rules ────────────────────────────────────────────────────
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  const rules = {
+    name:    { el: () => form.elements['name'],    err: 'err-name',    validate: v => v ? '' : 'Please enter your name.' },
+    email:   { el: () => form.elements['email'],   err: 'err-email',   validate: v => !v ? 'Please enter your email.' : !EMAIL_RE.test(v) ? 'Please enter a valid email address (e.g. you@example.com).' : '' },
+    subject: { el: () => form.elements['subject'], err: 'err-subject', validate: v => v ? '' : 'Please enter a subject.' },
+    body:    { el: () => form.elements['body'],    err: 'err-body',    validate: v => !v ? 'Please enter your message.' : v.length < 10 ? 'Message is too short — add a bit more detail.' : '' },
+  };
+
+  // ── Show / clear a single field error ──────────────────────────────────
+  function setError(key, msg) {
+    const input  = rules[key].el();
+    const errEl  = document.getElementById(rules[key].err);
+    errEl.textContent = msg;
+    input.classList.toggle('input--error', !!msg);
+    input.setAttribute('aria-invalid', !!msg);
+  }
+
+  // ── Validate all fields, return true if valid ───────────────────────────
+  function validateAll() {
+    let valid = true;
+    for (const [key, rule] of Object.entries(rules)) {
+      const msg = rule.validate(rule.el().value.trim());
+      setError(key, msg);
+      if (msg) valid = false;
+    }
+    return valid;
+  }
+
+  // ── Live validation: clear error as soon as field is corrected ──────────
+  for (const [key, rule] of Object.entries(rules)) {
+    rule.el().addEventListener('input', () => {
+      const msg = rule.validate(rule.el().value.trim());
+      setError(key, msg);
+    });
+    rule.el().addEventListener('blur', () => {
+      const msg = rule.validate(rule.el().value.trim());
+      setError(key, msg);
+    });
+  }
+
+  // ── Submit ──────────────────────────────────────────────────────────────
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     status.textContent = '';
     status.className   = 'form-status';
 
-    const data = {
-      name:    form.elements['name'].value.trim(),
-      email:   form.elements['email'].value.trim(),
-      subject: form.elements['subject'].value.trim(),
-      body:    form.elements['body'].value.trim(),
-    };
-
-    if (!data.name || !data.email || !data.body) {
-      status.textContent = 'Please fill in all required fields.';
-      status.classList.add('form-status--error');
+    if (!validateAll()) {
+      // Scroll to first error
+      const firstErr = form.querySelector('.input--error');
+      if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
-    // Loading state
-    btn.disabled    = true;
-    label.hidden    = true;
-    spinner.hidden  = false;
+    btn.disabled   = true;
+    label.hidden   = true;
+    spinner.hidden = false;
 
     try {
       const res = await fetch(`${API}/contact`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(data),
+        body: JSON.stringify({
+          name:    form.elements['name'].value.trim(),
+          email:   form.elements['email'].value.trim(),
+          subject: form.elements['subject'].value.trim(),
+          body:    form.elements['body'].value.trim(),
+        }),
       });
       const json = await res.json();
 
@@ -567,6 +612,8 @@
         status.textContent = '✅ Message sent — thank you! I\'ll be in touch soon.';
         status.classList.add('form-status--success');
         form.reset();
+        // Clear all error states after reset
+        for (const key of Object.keys(rules)) setError(key, '');
       } else {
         throw new Error(json.message || 'Something went wrong');
       }

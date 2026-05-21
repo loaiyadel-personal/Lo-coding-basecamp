@@ -777,3 +777,27 @@ footer{
   --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
   --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
 }
+
+/* ════════════════════════  FORM VALIDATION  ════════════════════════ */
+.req-star { color: var(--sky, #0272c0); }
+
+.field-error {
+  color: #f87171;
+  font-size: .8rem;
+  font-weight: 500;
+  min-height: 1.2em;
+  display: block;
+  margin-top: .25rem;
+}
+
+/* Error state on inputs/textareas */
+.form-group input.input--error,
+.form-group textarea.input--error {
+  border-color: #f87171;
+  box-shadow: 0 0 0 3px rgba(248,113,113,0.18);
+}
+.form-group input.input--error:focus,
+.form-group textarea.input--error:focus {
+  border-color: #f87171;
+  box-shadow: 0 0 0 3px rgba(248,113,113,0.28);
+}

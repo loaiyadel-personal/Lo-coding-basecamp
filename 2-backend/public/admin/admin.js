@@ -58,20 +58,20 @@ function confirmDialog(message, label = 'Delete') {
   return new Promise((resolve) => {
     $('#confirmMsg').textContent = message;
     $('#confirmYes').textContent = label;
-    $('#confirmOverlay').hidden = false;
+    $('#confirmOverlay').hidden  = false;
 
-    const yes = $('#confirmYes');
-    const no  = $('#confirmNo');
+    function onYes() { close(true);  }
+    function onNo()  { close(false); }
 
-    function cleanup(result) {
+    function close(result) {
       $('#confirmOverlay').hidden = true;
-      yes.replaceWith(yes.cloneNode(true)); // remove old listeners
-      no.replaceWith(no.cloneNode(true));
+      $('#confirmYes').removeEventListener('click', onYes);
+      $('#confirmNo').removeEventListener('click',  onNo);
       resolve(result);
     }
 
-    $('#confirmYes').addEventListener('click', () => cleanup(true),  { once: true });
-    $('#confirmNo').addEventListener('click',  () => cleanup(false), { once: true });
+    $('#confirmYes').addEventListener('click', onYes);
+    $('#confirmNo').addEventListener('click',  onNo);
   });
 }
 
