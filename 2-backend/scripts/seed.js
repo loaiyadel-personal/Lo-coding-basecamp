@@ -52,7 +52,7 @@ const seed = async () => {
     {
       order:     0,
       company:   'Capgemini',
-      logo:      'https://logo.clearbit.com/capgemini.com',
+      logo:      '',
       role:      'Senior Scrum Master & Agile Project Manager',
       location:  'Cairo, Egypt',
       startDate: 'June 2025',
@@ -70,7 +70,7 @@ const seed = async () => {
     {
       order:     1,
       company:   'Cyshield',
-      logo:      'https://logo.clearbit.com/cyshield.com',
+      logo:      '',
       role:      'Senior Scrum Master',
       location:  'Cairo, Egypt',
       startDate: 'July 2024',
@@ -88,7 +88,7 @@ const seed = async () => {
     {
       order:     2,
       company:   'Myoncare GmbH',
-      logo:      'https://logo.clearbit.com/myoncare.com',
+      logo:      '',
       role:      'Senior Scrum Master',
       location:  'Cairo, Egypt',
       startDate: 'August 2022',
@@ -106,7 +106,7 @@ const seed = async () => {
     {
       order:     3,
       company:   'Vodafone Intelligent Solutions (_VOIS)',
-      logo:      'https://logo.clearbit.com/vodafone.com',
+      logo:      '',
       role:      'Delivery Manager / Scrum Master',
       location:  'Cairo, Egypt',
       startDate: 'March 2019',
@@ -122,7 +122,7 @@ const seed = async () => {
     {
       order:     4,
       company:   'Vodafone Intelligent Solutions (_VOIS)',
-      logo:      'https://logo.clearbit.com/vodafone.com',
+      logo:      '',
       role:      'Senior Software Testing Engineer',
       location:  'Cairo, Egypt',
       startDate: 'May 2017',
@@ -138,7 +138,7 @@ const seed = async () => {
     {
       order:     5,
       company:   'Hewlett Packard Enterprise (HPE)',
-      logo:      'https://logo.clearbit.com/hpe.com',
+      logo:      '',
       role:      'Software Testing Engineer',
       location:  'Cairo, Egypt',
       startDate: 'October 2015',
@@ -217,7 +217,7 @@ const seed = async () => {
       issuer:        'Scrum Alliance',
       issueDate:     'July 2021',
       credentialUrl: 'https://www.scrumalliance.org/members/1221419#about',
-      logo:          'https://logo.clearbit.com/scrumalliance.org',
+      logo:          '',
     },
     {
       order:         1,
@@ -225,7 +225,7 @@ const seed = async () => {
       issuer:        'PeopleCert',
       issueDate:     'May 2026',
       credentialUrl: '',
-      logo:          'https://logo.clearbit.com/peoplecert.org',
+      logo:          '',
     },
     {
       order:         2,
@@ -233,7 +233,7 @@ const seed = async () => {
       issuer:        'Capgemini',
       issueDate:     'November 2025',
       credentialUrl: '',
-      logo:          'https://logo.clearbit.com/capgemini.com',
+      logo:          '',
     },
     {
       order:         3,
@@ -241,7 +241,7 @@ const seed = async () => {
       issuer:        'Capgemini',
       issueDate:     'September 2026',
       credentialUrl: '',
-      logo:          'https://logo.clearbit.com/capgemini.com',
+      logo:          '',
     },
   ]);
   console.log('✅ Certifications seeded (4 entries)');

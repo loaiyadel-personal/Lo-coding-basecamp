@@ -448,12 +448,15 @@ async function loadProfile() {
     ['name','title','subtitle','email','phone','location','linkedin','statusChip','bio','contactNote','photo'].forEach(k => {
       if (form.elements[k]) form.elements[k].value = data[k] || '';
     });
-    // Populate photo preview
-    const photoInput = form.elements['photo'];
+    // Populate photo preview if a URL is stored
+    const photoInput   = form.elements['photo'];
     const photoPreview = document.getElementById('photoPreview');
-    if (photoPreview && photoInput && photoInput.value) {
-      photoPreview.src = photoInput.value;
-      photoPreview.style.opacity = '1';
+    if (photoPreview && photoInput) {
+      if (photoInput.value) {
+        photoPreview.src          = photoInput.value;
+        photoPreview.style.opacity = '1';
+        photoPreview.style.padding = '0';
+      }
     }
     // Populate stats fields
     if (data.stats && data.stats.length) {
@@ -489,6 +492,36 @@ $('#profileForm').addEventListener('submit', async (e) => {
   } catch (err) { showStatus(status, err.message, false); toast(err.message, 'err'); }
 });
 
+/* ── Logo auto-derive (Google Favicon fallback) ─────────── */
+const COMPANY_DOMAINS = {
+  capgemini:    'capgemini.com',
+  cyshield:     'cyshield.com',
+  myoncare:     'myoncare.com',
+  vodafone:     'vodafone.com',
+  vois:         'vodafone.com',
+  hpe:          'hpe.com',
+  hewlett:      'hpe.com',
+  'scrum alliance': 'scrumalliance.org',
+  scrumalliance:'scrumalliance.org',
+  peoplecert:   'peoplecert.org',
+};
+
+function domainFromName(name) {
+  if (!name) return '';
+  const lower = name.toLowerCase();
+  for (const [key, domain] of Object.entries(COMPANY_DOMAINS)) {
+    if (lower.includes(key)) return domain;
+  }
+  return '';
+}
+
+function displayLogo(item, section) {
+  if (item.logo) return item.logo;
+  const name = section === 'certifications' ? item.issuer : item.company;
+  const domain = domainFromName(name);
+  return domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : '';
+}
+
 /* Generic list sections */
 const SECTION_META = {
   experience: {
@@ -523,9 +556,12 @@ async function loadList(section) {
     const meta = SECTION_META[section];
     const hasLogo = section === 'experience' || section === 'certifications';
     listEl.innerHTML = data.map(item => {
-      const logoHtml = hasLogo && item.logo
-        ? `<img class="item-icon" src="${esc(item.logo)}" alt="" onerror="this.style.opacity='0'">`
-        : (hasLogo ? `<div class="item-icon-ph"></div>` : '');
+      const logoSrc = hasLogo ? displayLogo(item, section) : '';
+      const logoHtml = hasLogo
+        ? (logoSrc
+            ? `<img class="item-icon" src="${esc(logoSrc)}" alt="" onerror="this.style.opacity='0'">`
+            : `<div class="item-icon-ph"></div>`)
+        : '';
       return `
       <div class="item-row">
         ${logoHtml}
@@ -630,7 +666,7 @@ function fieldIcon(label, name, value = '') {
     <label>${label}</label>
     <div class="icon-field-row">
       <input type="text" name="${name}" value="${esc(value)}"
-        placeholder="https://logo.clearbit.com/company.com"
+        placeholder="https://… (paste any public image URL, or leave blank for auto icon)"
         oninput="(function(el){var img=document.getElementById('${pid}');if(img){img.src=el.value||'';img.style.opacity=el.value?'1':'0';}})(this)">
       <div class="icon-field-preview">
         <img id="${pid}" src="${esc(value)}" alt="preview"
