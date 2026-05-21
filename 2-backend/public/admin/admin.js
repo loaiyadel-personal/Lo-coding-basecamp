@@ -265,18 +265,20 @@ $('#modalOverlay').addEventListener('click', e => {
 /* ══════════════════════════════════════════════════════════
    ANALYTICS
    ══════════════════════════════════════════════════════════ */
+let visitsChartInstance = null;
+
 async function loadAnalytics() {
-  $('#analyticsStats').innerHTML = statCard('Loading…', '—');
+  $('#analyticsStats').innerHTML =
+    statCard('Loading…','—') + statCard('—','—') + statCard('—','—') + statCard('—','—');
   try {
     const { data } = await apiFetch('/admin/analytics');
-    const { totalVisits, visitsByDay, topReferrers } = data;
-    const last30 = visitsByDay.reduce((s, d) => s + d.count, 0);
-    const today  = visitsByDay.find(d => d._id === new Date().toISOString().slice(0,10))?.count || 0;
+    const { totalViews, uniqueVisitors, todayViews, todayUnique, visitsByDay, topReferrers } = data;
 
     $('#analyticsStats').innerHTML =
-      statCard('Total Visits', totalVisits, 'accent') +
-      statCard('Last 30 Days', last30, 'green') +
-      statCard('Today', today, 'amber');
+      statCard('Total Page Views',   totalViews,     'accent') +
+      statCard('Unique Visitors',    uniqueVisitors, 'green')  +
+      statCard('Views Today',        todayViews,     'amber')  +
+      statCard('Unique Today',       todayUnique,    '');
 
     renderChart(visitsByDay);
     renderReferrers(topReferrers);
@@ -286,20 +288,122 @@ async function loadAnalytics() {
 }
 
 function renderChart(data) {
-  const wrap = $('#chartWrap');
-  if (!data.length) {
-    wrap.innerHTML = '<div class="empty" style="align-self:center;width:100%">No visits yet.<br>Open your CV page to record the first visit.</div>';
+  const canvas   = $('#visitsChart');
+  const emptyEl  = $('#chartEmpty');
+
+  if (!data || !data.length) {
+    canvas.hidden   = true;
+    emptyEl.hidden  = false;
     return;
   }
-  const max = Math.max(...data.map(d => d.count), 1);
-  wrap.innerHTML = data.map(d => {
-    const pct   = Math.round((d.count / max) * 100);
-    const label = d._id.slice(5);
-    return `<div class="chart-bar-wrap" title="${d._id}: ${d.count} visit${d.count !== 1 ? 's' : ''}">
-      <div class="chart-bar" style="height:${Math.max(pct, 2)}%"></div>
-      <div class="chart-label">${label}</div>
-    </div>`;
-  }).join('');
+  canvas.hidden  = false;
+  emptyEl.hidden = true;
+
+  const labels  = data.map(d => {
+    const [, m, day] = d._id.split('-');
+    return `${day}/${m}`;
+  });
+  const views   = data.map(d => d.views);
+  const unique  = data.map(d => d.unique);
+
+  // Destroy previous instance to avoid canvas reuse error
+  if (visitsChartInstance) {
+    visitsChartInstance.destroy();
+    visitsChartInstance = null;
+  }
+
+  const ctx = canvas.getContext('2d');
+
+  // Gradient fill for page views
+  const gradViews = ctx.createLinearGradient(0, 0, 0, 280);
+  gradViews.addColorStop(0,   'rgba(2, 114, 192, 0.35)');
+  gradViews.addColorStop(0.7, 'rgba(2, 114, 192, 0.05)');
+  gradViews.addColorStop(1,   'rgba(2, 114, 192, 0)');
+
+  // Gradient fill for unique visitors
+  const gradUnique = ctx.createLinearGradient(0, 0, 0, 280);
+  gradUnique.addColorStop(0,   'rgba(34, 197, 94, 0.25)');
+  gradUnique.addColorStop(0.7, 'rgba(34, 197, 94, 0.04)');
+  gradUnique.addColorStop(1,   'rgba(34, 197, 94, 0)');
+
+  visitsChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label:           'Page Views',
+          data:            views,
+          borderColor:     '#0272c0',
+          backgroundColor: gradViews,
+          borderWidth:     2.5,
+          pointRadius:     3,
+          pointHoverRadius:6,
+          pointBackgroundColor: '#0272c0',
+          pointBorderColor:     '#0d1829',
+          pointBorderWidth:     2,
+          tension:         0.4,
+          fill:            true,
+          order:           2,
+        },
+        {
+          label:           'Unique Visitors',
+          data:            unique,
+          borderColor:     '#22c55e',
+          backgroundColor: gradUnique,
+          borderWidth:     2,
+          pointRadius:     3,
+          pointHoverRadius:6,
+          pointBackgroundColor: '#22c55e',
+          pointBorderColor:     '#0d1829',
+          pointBorderWidth:     2,
+          tension:         0.4,
+          fill:            true,
+          order:           1,
+        },
+      ],
+    },
+    options: {
+      responsive:          true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      animation:   { duration: 600, easing: 'easeOutQuart' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1829',
+          borderColor:     'rgba(255,255,255,0.12)',
+          borderWidth:     1,
+          titleColor:      '#e8eef5',
+          bodyColor:       '#b0c4d8',
+          padding:         10,
+          cornerRadius:    8,
+          callbacks: {
+            title: items => {
+              const d = data[items[0].dataIndex];
+              return d ? d._id : items[0].label;
+            },
+            label: item => ` ${item.dataset.label}: ${item.parsed.y}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid:  { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+          ticks: { color: '#6b85a0', font: { size: 11 }, maxRotation: 0,
+                   maxTicksLimit: 10 },
+          border: { display: false },
+        },
+        y: {
+          beginAtZero: true,
+          grid:  { color: 'rgba(255,255,255,0.04)', drawBorder: false },
+          ticks: { color: '#6b85a0', font: { size: 11 }, precision: 0,
+                   stepSize: 1 },
+          border: { display: false },
+        },
+      },
+    },
+  });
 }
 
 function renderReferrers(data) {
@@ -341,9 +445,18 @@ async function loadProfile() {
     if (!data) return;
     _profileId = data._id;
     const form = $('#profileForm');
-    ['name','title','subtitle','email','phone','location','linkedin','statusChip','bio'].forEach(k => {
+    ['name','title','subtitle','email','phone','location','linkedin','statusChip','bio','contactNote'].forEach(k => {
       if (form.elements[k]) form.elements[k].value = data[k] || '';
     });
+    // Populate stats fields
+    if (data.stats && data.stats.length) {
+      data.stats.forEach((s, i) => {
+        const valEl = form.elements[`stat_val_${i}`];
+        const lblEl = form.elements[`stat_lbl_${i}`];
+        if (valEl) valEl.value = s.value || '';
+        if (lblEl) lblEl.value = s.label || '';
+      });
+    }
   } catch (err) { toast('Could not load profile', 'err'); }
 }
 
@@ -352,9 +465,16 @@ $('#profileForm').addEventListener('submit', async (e) => {
   const status = $('#profileSaveStatus');
   const form   = e.target;
   const body   = {};
-  ['name','title','subtitle','email','phone','location','linkedin','statusChip','bio'].forEach(k => {
-    body[k] = form.elements[k].value;
+  ['name','title','subtitle','email','phone','location','linkedin','statusChip','bio','contactNote'].forEach(k => {
+    body[k] = form.elements[k]?.value || '';
   });
+  // Build stats array from the 4 stat pairs
+  body.stats = [];
+  for (let i = 0; i < 4; i++) {
+    const val = form.elements[`stat_val_${i}`]?.value?.trim();
+    const lbl = form.elements[`stat_lbl_${i}`]?.value?.trim();
+    if (val || lbl) body.stats.push({ value: val || '', label: lbl || '' });
+  }
   try {
     await apiFetch(`/admin/cv/profile/${_profileId}`, { method: 'PUT', body: JSON.stringify(body) });
     showStatus(status, 'Saved!');

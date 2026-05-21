@@ -14,9 +14,10 @@ const ProfileSchema = new mongoose.Schema({
   email:      { type: String },
   location:   { type: String },
   linkedin:   { type: String },
-  statusChip: { type: String },                    // e.g. "Open to Senior Agile & Delivery Roles"
-  photo:      { type: String },                    // URL or base64
-  stats:      [StatSchema],
+  statusChip:  { type: String },                    // e.g. "Open to Senior Agile & Delivery Roles"
+  contactNote: { type: String },                    // Subtitle shown in the contact section
+  photo:       { type: String },                    // URL or base64
+  stats:       [StatSchema],
 }, { timestamps: true });
 
 module.exports = mongoose.model('Profile', ProfileSchema);

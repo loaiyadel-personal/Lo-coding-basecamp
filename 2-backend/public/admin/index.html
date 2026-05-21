@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Loaiy Adel CV</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -103,9 +104,18 @@
       <div class="stats-row" id="analyticsStats"></div>
       <div class="analytics-grid">
         <div class="card chart-card">
-          <h3 class="card-title">Visits — Last 30 Days</h3>
-          <div class="chart-wrap" id="chartWrap">
-            <div class="empty">No visit data yet</div>
+          <div class="chart-header">
+            <h3 class="card-title" style="padding:0">Visits — Last 30 Days</h3>
+            <div class="chart-legend">
+              <span class="legend-dot" style="background:#0272c0"></span> Page views
+              <span class="legend-dot" style="background:#22c55e;margin-left:.75rem"></span> Unique visitors
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="visitsChart"></canvas>
+            <div class="chart-empty" id="chartEmpty" hidden>
+              No visits yet — open your CV page to see data here.
+            </div>
           </div>
         </div>
         <div class="card">
@@ -142,6 +152,16 @@
               <div class="field"><label>Status Chip</label><input type="text" name="statusChip"></div>
             </div>
             <div class="field full"><label>Bio</label><textarea name="bio" rows="4"></textarea></div>
+            <div class="field full"><label>Contact Section Note <span style="opacity:.5;font-size:.8em">(shown below the "Get In Touch" heading)</span></label><textarea name="contactNote" rows="2" placeholder="e.g. I'm open to senior Agile & Delivery roles worldwide. Drop me a message and I'll reply promptly."></textarea></div>
+            <div class="field full">
+              <label>Stats (4 numbers shown in the hero — format: <code style="font-size:.8rem;opacity:.7">11+ · Years in Agile</code>)</label>
+              <div class="stats-grid" id="statsGrid">
+                <div class="stats-pair"><input type="text" name="stat_val_0" placeholder="e.g. 11+"><input type="text" name="stat_lbl_0" placeholder="Label e.g. Years in Agile"></div>
+                <div class="stats-pair"><input type="text" name="stat_val_1" placeholder="e.g. 6"><input type="text" name="stat_lbl_1" placeholder="Label e.g. Enterprises Served"></div>
+                <div class="stats-pair"><input type="text" name="stat_val_2" placeholder="e.g. 3"><input type="text" name="stat_lbl_2" placeholder="Label e.g. Scaled Frameworks"></div>
+                <div class="stats-pair"><input type="text" name="stat_val_3" placeholder="e.g. 4"><input type="text" name="stat_lbl_3" placeholder="Label e.g. Certifications"></div>
+              </div>
+            </div>
             <div class="form-actions">
               <button type="submit" class="btn-save">Save Profile</button>
               <span class="save-status" id="profileSaveStatus"></span>

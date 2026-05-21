@@ -429,41 +429,51 @@ textarea { resize: vertical; }
 }
 @media(max-width: 900px) { .analytics-grid { grid-template-columns: 1fr; } }
 
-.chart-card { padding-bottom: 1.25rem; }
-.chart-wrap {
-  padding: 0 1.25rem;
-  height: 220px;
+.chart-card { padding-bottom: 0; }
+
+.chart-header {
   display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  overflow-x: auto;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.chart-legend {
+  display: flex;
+  align-items: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  gap: 0.3rem;
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
-.chart-bar-wrap {
+.chart-wrap {
+  position: relative;
+  height: 260px;
+  padding: 0 1.25rem 1.25rem;
+}
+.chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+.chart-empty {
+  position: absolute;
+  inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  min-width: 28px;
-}
-.chart-bar {
-  background: var(--sky);
-  border-radius: 3px 3px 0 0;
-  width: 22px;
-  transition: height 500ms var(--ease), opacity 200ms ease;
-  opacity: 0.75;
-  min-height: 3px;
-}
-.chart-bar:hover { opacity: 1; }
-.chart-label {
+  justify-content: center;
   color: var(--text-muted);
-  font-size: 0.6rem;
+  font-size: 0.88rem;
   text-align: center;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  max-height: 40px;
-  overflow: hidden;
+  padding: 1rem;
+  line-height: 1.6;
 }
 
 .referrer-list { padding: 0.5rem 1.25rem 1.25rem; }
@@ -524,6 +534,25 @@ textarea { resize: vertical; }
   gap: 0.85rem;
 }
 .field.full { grid-column: 1 / -1; }
+
+/* Stats pair grid (profile editor) */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.4rem;
+}
+.stats-pair {
+  display: flex;
+  gap: 0.5rem;
+}
+.stats-pair input:first-child {
+  width: 80px;
+  flex-shrink: 0;
+  text-align: center;
+  font-weight: 600;
+}
+.stats-pair input:last-child { flex: 1; }
 
 .form-actions {
   display: flex;
