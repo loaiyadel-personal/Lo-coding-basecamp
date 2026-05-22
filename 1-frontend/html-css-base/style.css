@@ -695,6 +695,7 @@ footer{
   flex-shrink:0;
 }
 .svc-icon svg{width:22px;height:22px;color:#38bdf8;}
+.svc-icon-emoji{font-size:1.5rem;line-height:1;}
 .svc-title{
   font-size:1rem;font-weight:700;color:#fff;
   margin:0;line-height:1.3;

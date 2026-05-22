@@ -10,6 +10,7 @@ const Education     = require('../src/models/Education');
 const Skill         = require('../src/models/Skill');
 const Certification = require('../src/models/Certification');
 const Language      = require('../src/models/Language');
+const Service       = require('../src/models/Service');
 
 const seed = async () => {
   await mongoose.connect(process.env.MONGO_URI);
@@ -23,6 +24,7 @@ const seed = async () => {
     Skill.deleteMany(),
     Certification.deleteMany(),
     Language.deleteMany(),
+    Service.deleteMany(),
   ]);
   console.log('🗑️  Cleared existing collections');
 
@@ -146,10 +148,10 @@ const seed = async () => {
       endDate:   'May 2017',
       isCurrent: false,
       bullets: [
-        'Delivered end-to-end manual and automated testing across mission-critical enterprise software releases in a structured Agile delivery model.',
+        'Delivered end-to-end manual and automated testing across mission-critical enterprise software releases.',
         'Developed and maintained robust automated test suites using Selenium and HP ALM, substantially reducing regression cycle times.',
-        'Produced comprehensive test plans, test cases, and defect reports aligned to sprint acceptance criteria and release readiness gates.',
-        'Collaborated cross-functionally within Agile squads, contributing to sprint ceremonies and continuously driving QA process maturity improvements.',
+        'Produced comprehensive test plans, test cases, and traceability matrices using HP ALM / Quality Center — ensuring full functional and regression coverage.',
+        'Produced clear, actionable defect reports and escalation paths, enabling engineering teams to resolve critical issues within defined SLA windows.',
       ],
     },
     {
@@ -264,6 +266,63 @@ const seed = async () => {
     { order: 2, name: 'French',  level: 'Basic',              proficiency: 2 },
   ]);
   console.log('✅ Languages seeded');
+
+  // ── Services ─────────────────────────────────────────────────────────────
+  await Service.insertMany([
+    {
+      order:        0,
+      title:        'Scrum Master Engagement',
+      icon:         '🔄',
+      description:  'Embed an experienced Senior Scrum Master in your team to facilitate ceremonies, clear blockers, and drive measurable, sustainable delivery velocity.',
+      deliverables: [
+        'Sprint facilitation & retrospectives',
+        'Backlog health & refinement support',
+        'Velocity & quality metrics reporting',
+        'Cross-team impediment removal',
+      ],
+      active: true,
+    },
+    {
+      order:        1,
+      title:        'Agile Coaching',
+      icon:         '💬',
+      description:  'Team and leadership coaching to shift your organisation from output-focused delivery to outcome-driven Agile thinking and lasting continuous improvement.',
+      deliverables: [
+        'Agile maturity assessment',
+        '1:1 team & leadership coaching',
+        'Workshop & retrospective facilitation',
+        'Communities of Practice (CoP) setup',
+      ],
+      active: true,
+    },
+    {
+      order:        2,
+      title:        'Agile Project Management',
+      icon:         '📊',
+      description:  'End-to-end project management using Agile practices — from planning and budgets to risk governance and C-suite stakeholder reporting.',
+      deliverables: [
+        'Project planning & roadmaps',
+        'Risk, budget & RAID log management',
+        'Stakeholder dashboards & reporting',
+        'Delivery governance & milestone tracking',
+      ],
+      active: true,
+    },
+    {
+      order:        3,
+      title:        'Agile Transformation',
+      icon:         '🚀',
+      description:  'Organisation-wide Agile transformation — from framework selection and maturity assessment to leadership alignment and embedding sustainable business agility.',
+      deliverables: [
+        'Transformation roadmap & strategy',
+        'SAFe / LeSS framework adoption',
+        'Leadership alignment & coaching',
+        'Value stream mapping & optimisation',
+      ],
+      active: true,
+    },
+  ]);
+  console.log('✅ Services seeded (4 entries)');
 
   console.log('\n🌱 Seed complete! All collections populated.');
   await mongoose.disconnect();

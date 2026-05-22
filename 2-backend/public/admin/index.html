@@ -193,6 +193,7 @@
         <button class="cv-tab" data-section="experience">Experience</button>
         <button class="cv-tab" data-section="skills">Skills</button>
         <button class="cv-tab" data-section="certifications">Certifications</button>
+        <button class="cv-tab" data-section="services">Services</button>
       </div>
 
       <!-- Profile editor -->
@@ -277,6 +278,18 @@
             <button class="btn-add" id="addCertBtn">+ Add Cert</button>
           </div>
           <div id="certList" class="item-list"></div>
+        </div>
+      </div>
+
+      <!-- Services editor -->
+      <div class="cv-section" id="cv-services" hidden>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">How I Can Help — Services</h3>
+            <button class="btn-add" id="addServiceBtn">+ Add Service</button>
+          </div>
+          <p class="card-hint">Each service appears as a card on the live CV. Toggle <strong>Active</strong> to show or hide without deleting.</p>
+          <div id="serviceList" class="item-list"></div>
         </div>
       </div>
     </section>

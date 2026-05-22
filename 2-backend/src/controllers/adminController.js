@@ -10,6 +10,7 @@ const modelMap = {
   skills:         require('../models/Skill'),
   certifications: require('../models/Certification'),
   languages:      require('../models/Language'),
+  services:       require('../models/Service'),
 };
 
 // ─── Auth ────────────────────────────────────────────────────────────────────

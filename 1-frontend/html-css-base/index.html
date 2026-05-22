@@ -89,7 +89,7 @@
       <div class="sec-icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
       </div>
-      <h2 class="sec-label">Agile Leadership &amp; Transformation Record</h2>
+      <h2 class="sec-label">Work Experience</h2>
       <div class="sec-line" aria-hidden="true"></div>
     </div>
 
@@ -244,7 +244,6 @@
           <li>Designed and executed backend environment testing and automated validation scenarios for major regional banking and telecom infrastructure projects across Egypt and MENA.</li>
           <li>Built and maintained structured test plans, test cases, and traceability matrices using <strong>HP ALM / Quality Center</strong> — ensuring full coverage of functional and regression requirements.</li>
           <li>Executed performance and load testing on enterprise middleware layers, identifying and reporting bottlenecks prior to production deployment.</li>
-          <li>Collaborated within Agile-adjacent project teams, aligning test execution cycles with iterative delivery milestones and sprint review gates.</li>
           <li>Produced clear, actionable defect reports and escalation paths, enabling engineering teams to resolve critical issues within defined SLA windows.</li>
         </ul>
       </article>
@@ -788,20 +787,21 @@
     }
   });
 
-  // ── Service cards → pre-fill contact form subject ────────────────────────
-  document.querySelectorAll('.svc-btn[data-service]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const svc = btn.dataset.service;
-      const subjectField = document.getElementById('cf-subject');
-      if (subjectField) subjectField.value = 'Enquiry: ' + svc;
-      const contactSection = document.getElementById('contact');
-      if (contactSection) contactSection.scrollIntoView({ behavior: 'smooth' });
-      setTimeout(() => {
-        const nameField = document.getElementById('cf-name');
-        if (nameField && !nameField.value) nameField.focus();
-        else if (subjectField) subjectField.focus();
-      }, 600);
-    });
+  // ── Service cards → pre-fill contact form subject (event delegation)
+  // Uses delegation so it works even after cv-loader.js replaces the grid
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.svc-btn[data-service]');
+    if (!btn) return;
+    const svc = btn.dataset.service;
+    const subjectField = document.getElementById('cf-subject');
+    if (subjectField) subjectField.value = 'Enquiry: ' + svc;
+    const contactSection = document.getElementById('contact');
+    if (contactSection) contactSection.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      const nameField = document.getElementById('cf-name');
+      if (nameField && !nameField.value) nameField.focus();
+      else if (subjectField) subjectField.focus();
+    }, 600);
   });
 </script>
 

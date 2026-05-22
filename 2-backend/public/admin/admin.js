@@ -613,6 +613,7 @@ async function loadCV(section) {
   if (section === 'experience')     await loadList('experience');
   if (section === 'skills')         await loadList('skills');
   if (section === 'certifications') await loadList('certifications');
+  if (section === 'services')       await loadList('services');
 }
 
 async function loadProfile() {
@@ -715,10 +716,15 @@ const SECTION_META = {
     sub:   c => `${c.issuer}${c.issueDate ? ' · ' + c.issueDate : ''}`,
     modal: renderCertModal,
   },
+  services: {
+    title: s => (s.active === false ? '[Hidden] ' : '') + s.title,
+    sub:   s => s.description ? s.description.slice(0, 80) + (s.description.length > 80 ? '…' : '') : '',
+    modal: renderServiceModal,
+  },
 };
 
 function listElId(section) {
-  const map = { experience: 'expList', skills: 'skillList', certifications: 'certList' };
+  const map = { experience: 'expList', skills: 'skillList', certifications: 'certList', services: 'serviceList' };
   return map[section];
 }
 
@@ -729,18 +735,21 @@ async function loadList(section) {
   try {
     const { data } = await apiFetch(`/cv/${section}`);
     if (!data.length) { listEl.innerHTML = '<div class="empty">None added yet</div>'; return; }
-    const meta = SECTION_META[section];
+    const meta    = SECTION_META[section];
     const hasLogo = section === 'experience' || section === 'certifications';
+    const hasEmoji = section === 'services';
     listEl.innerHTML = data.map(item => {
-      const logoSrc = hasLogo ? displayLogo(item, section) : '';
-      const logoHtml = hasLogo
+      const logoSrc  = hasLogo ? displayLogo(item, section) : '';
+      const iconHtml = hasLogo
         ? (logoSrc
             ? `<img class="item-icon" src="${esc(logoSrc)}" alt="" onerror="this.style.opacity='0'">`
             : `<div class="item-icon-ph"></div>`)
-        : '';
+        : hasEmoji
+          ? `<div class="item-icon-ph svc-emoji-badge">${esc(item.icon || '⚡')}</div>`
+          : '';
       return `
-      <div class="item-row">
-        ${logoHtml}
+      <div class="item-row${item.active === false ? ' item-row-hidden' : ''}">
+        ${iconHtml}
         <div class="item-info">
           <div class="item-title">${esc(meta.title(item))}</div>
           <div class="item-sub">${esc(meta.sub(item))}</div>
@@ -830,6 +839,23 @@ function renderCertModal(item, id, section) {
   </form>`;
 }
 
+function renderServiceModal(item, id, section) {
+  const saveCall = id ? `saveItem(event,'${section}','${id}')` : `addItem(event,'${section}')`;
+  return `<form onsubmit="${saveCall}">
+    <div style="display:flex;flex-direction:column;gap:.75rem">
+      ${field('Service Title', 'title', item.title || '')}
+      ${field('Icon emoji (e.g. 🔄 💬 📊 🚀 ⚡)', 'icon', item.icon || '')}
+      ${fieldArea('Short Description (2-3 sentences)', 'description', item.description || '')}
+      ${fieldArea('Deliverables — one per line (shown as bullet list)', 'deliverables', (item.deliverables || []).join('\n'))}
+      <label style="display:flex;align-items:center;gap:.5rem;color:var(--text-mid);font-size:.85rem;cursor:pointer">
+        <input type="checkbox" name="active" ${item.active !== false ? 'checked' : ''} style="width:auto;cursor:pointer">
+        Show on live CV (uncheck to hide without deleting)
+      </label>
+      <button type="submit" class="btn-save" style="align-self:flex-start">Save</button>
+    </div>
+  </form>`;
+}
+
 function field(label, name, value = '') {
   return `<div class="field"><label>${label}</label><input type="text" name="${name}" value="${esc(value)}"></div>`;
 }
@@ -865,9 +891,10 @@ window.saveItem = async function(e, section, id) {
 };
 
 /* ── Add new items ──────────────────────────────────────── */
-$('#addExpBtn')?.addEventListener('click',  () => openAddModal('experience',     renderExpModal({},   null, 'experience')));
-$('#addSkillBtn')?.addEventListener('click', () => openAddModal('skills',        renderSkillModal({}, null, 'skills')));
-$('#addCertBtn')?.addEventListener('click',  () => openAddModal('certifications',renderCertModal({},  null, 'certifications')));
+$('#addExpBtn')?.addEventListener('click',     () => openAddModal('experience',     renderExpModal({},      null, 'experience')));
+$('#addSkillBtn')?.addEventListener('click',   () => openAddModal('skills',         renderSkillModal({},   null, 'skills')));
+$('#addCertBtn')?.addEventListener('click',    () => openAddModal('certifications', renderCertModal({},    null, 'certifications')));
+$('#addServiceBtn')?.addEventListener('click', () => openAddModal('services',       renderServiceModal({}, null, 'services')));
 
 function openAddModal(section, html) {
   $('#modalTitle').textContent = 'Add ' + section.slice(0,-1);
@@ -890,10 +917,13 @@ function formToBody(form, section) {
   const fd   = new FormData(form);
   const body = {};
   for (const [k, v] of fd.entries()) body[k] = v;
-  if (body.bullets)    body.bullets = body.bullets.split('\n').map(s => s.trim()).filter(Boolean);
-  if (body.items)      body.items   = body.items.split(',').map(s => s.trim()).filter(Boolean);
+  if (body.bullets)      body.bullets      = body.bullets.split('\n').map(s => s.trim()).filter(Boolean);
+  if (body.items)        body.items        = body.items.split(',').map(s => s.trim()).filter(Boolean);
+  if (body.deliverables) body.deliverables = body.deliverables.split('\n').map(s => s.trim()).filter(Boolean);
   if ('isCurrent' in body) body.isCurrent = true;
   else if (section === 'experience') body.isCurrent = false;
+  if ('active' in body) body.active = true;
+  else if (section === 'services')   body.active = false;
   return body;
 }
 

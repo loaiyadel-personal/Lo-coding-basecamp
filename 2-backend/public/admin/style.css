@@ -1052,3 +1052,147 @@ textarea { resize: vertical; }
   .toast { max-width: 100%; min-width: 0; }
 }
 .btn-danger:hover { background: rgba(248,113,113,0.25); }
+
+/* ── Services list extras ───────────────────────────────── */
+.card-hint {
+  padding: 0.5rem 1.25rem 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.svc-emoji-badge {
+  font-size: 1.25rem;
+  line-height: 1;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2,114,192,0.12);
+  border-color: rgba(2,114,192,0.2);
+}
+.item-row-hidden { opacity: 0.45; }
+.item-row-hidden .item-title { text-decoration: line-through; }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE OVERHAUL — complete mobile + tablet treatment
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Data tables: guarantee horizontal scroll ───────────── */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.data-table  { min-width: 640px; }
+
+/* ── CV Editor tabs: horizontal scroll on narrow screens ── */
+.cv-tabs {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap !important;
+  padding-bottom: 2px;   /* room for scrollbar */
+}
+.cv-tab { white-space: nowrap; flex-shrink: 0; }
+
+/* ── Card header: wrap title + button on narrow cards ───── */
+.card-header { flex-wrap: wrap; gap: 0.5rem; }
+
+/* ── Edit form: tighter padding inside cards on small ────── */
+@media (max-width: 640px) {
+  .edit-form { padding: 0.75rem; }
+  .modal-body { padding: 0.85rem; }
+}
+
+/* ── Tablet (≤ 900px) ────────────────────────────────────── */
+@media (max-width: 900px) {
+  .analytics-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+}
+@media (max-width: 860px) {
+  .analytics-lower { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .analytics-lower { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Mobile (≤ 768px) ────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Sidebar: slide-in overlay */
+  .sidebar {
+    position: fixed;
+    top: 0; left: calc(-1 * var(--sidebar-w) - 24px); bottom: 0;
+    width: var(--sidebar-w);
+    z-index: 150;
+    transition: left 0.28s var(--ease);
+    box-shadow: 4px 0 32px rgba(0,0,0,0.5);
+  }
+  .sidebar.open { left: 0; }
+
+  /* Show hamburger */
+  .btn-menu { display: flex; }
+
+  /* Top bar */
+  .topbar { padding: 0 1rem; gap: 0.75rem; }
+  .topbar-sub { display: none; }
+
+  /* Tab content */
+  .tab { padding: 1rem; gap: 1rem; }
+
+  /* Stats row: 2 columns */
+  .stats-row,
+  #analyticsStats { grid-template-columns: repeat(2, 1fr); }
+
+  /* Chart height */
+  .chart-box { height: 220px !important; }
+  .chart-wrap { height: 220px; }
+
+  /* Item list rows: stack info below icon on very narrow */
+  .item-row { flex-wrap: wrap; gap: 0.5rem; padding: 0.65rem 1rem; }
+  .item-info { min-width: 0; }
+  .item-actions { margin-left: auto; flex-shrink: 0; }
+
+  /* Modals: full width */
+  .modal-overlay { padding: 0.75rem; align-items: flex-end; }
+  .modal {
+    max-width: 100%;
+    max-height: 88vh;
+    border-radius: 14px 14px 0 0;
+  }
+
+  /* Profile form: single column */
+  .form-grid { grid-template-columns: 1fr !important; }
+
+  /* Stats grid: 2 col */
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Photo field row */
+  .photo-field-row { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+
+  /* Bullets edit */
+  .bullets-list { gap: 0.5rem; }
+
+  /* Topbar info flex */
+  .topbar-info { flex: 1; min-width: 0; overflow: hidden; }
+  .topbar-title { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
+/* ── Small mobile (≤ 480px) ─────────────────────────────── */
+@media (max-width: 480px) {
+  :root { --top-h: 56px; }
+
+  .tab { padding: 0.75rem; }
+  .topbar { padding: 0 0.75rem; }
+
+  /* Full single column stats */
+  .stats-row,
+  #analyticsStats { grid-template-columns: 1fr 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+
+  /* Donut charts smaller */
+  .donut-wrap { height: 130px; }
+
+  /* Toast: stretch full width */
+  .toast-container { left: 0.75rem; right: 0.75rem; bottom: 1rem; align-items: stretch; }
+  .toast { max-width: 100%; min-width: 0; }
+
+  /* Form save button full width */
+  .form-actions { flex-direction: column; align-items: flex-start; }
+  .btn-save { width: 100%; justify-content: center; }
+}

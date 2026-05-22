@@ -256,6 +256,33 @@
     });
   }
 
+  /* ── Apply Services ──────────────────────────────────────────── */
+  function applyServices(services) {
+    if (!services || !services.length) return;
+    const grid = document.querySelector('.services-grid');
+    if (!grid) return;
+
+    const active = services.filter(s => s.active !== false);
+    if (!active.length) return;
+
+    grid.innerHTML = active.map(svc => `
+      <article class="svc-card" aria-label="${esc(svc.title)}">
+        <div class="svc-icon" aria-hidden="true">
+          <span class="svc-icon-emoji">${esc(svc.icon || '⚡')}</span>
+        </div>
+        <h3 class="svc-title">${esc(svc.title)}</h3>
+        <p class="svc-desc">${esc(svc.description)}</p>
+        <ul class="svc-list">
+          ${(svc.deliverables || []).map(d => `<li>${esc(d)}</li>`).join('')}
+        </ul>
+        <button class="svc-btn" data-service="${esc(svc.title)}" aria-label="Enquire about ${esc(svc.title)}">
+          Let's talk
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </article>`).join('');
+    // svc-btn clicks handled via event delegation on document (in page inline script)
+  }
+
   /* ── Main loader ──────────────────────────────────────────────── */
   async function loadCV() {
     try {
@@ -269,6 +296,7 @@
       applyExperience(data.experience);
       applySkills(data.skills);
       applyCertifications(data.certifications);
+      applyServices(data.services);
     } catch (e) {
       // Backend offline or request failed — static HTML remains, no error shown to visitor
     }
