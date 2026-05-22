@@ -164,9 +164,9 @@ const seed = async () => {
       endDate:   'September 2015',
       isCurrent: false,
       bullets: [
-        'Performed functional and regression testing across multiple software product releases in an early-career role focused on quality assurance fundamentals.',
-        'Authored structured test plans and detailed defect reports, contributing to measurable improvements in pre-release software quality.',
-        'Developed core Agile delivery competencies that formed the foundation of a 10+ year career in enterprise Agile coaching and delivery leadership.',
+        'Delivered structured quality assurance and functional validation for modular educational software suites targeting the Egyptian K-12 and higher education market.',
+        'Authored and executed manual test cases covering core functional modules, coordinating directly with developers on defect reproduction, triage, and fix verification.',
+        'Supported iterative release readiness reviews, ensuring each build met defined acceptance criteria before handoff to client UAT.',
       ],
     },
   ]);
