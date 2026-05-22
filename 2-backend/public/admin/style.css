@@ -979,19 +979,42 @@ textarea { resize: vertical; }
 .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .data-table  { min-width: 640px; }
 
-/* ── CV Editor tabs: sticky + horizontal scroll ─────────── */
+/* ── CV Editor: pinned tab bar + scrollable body ─────────── */
+
+/*
+ * #tab-cv overrides the generic .tab scroll behaviour:
+ * - .tab normally scrolls the whole section
+ * - Here we want only the section CONTENT to scroll,
+ *   while .cv-tabs stays pinned at the top always.
+ * So we turn off overflow on the tab itself and split
+ * the layout into a pinned header (.cv-tabs) +
+ * a scrolling body (.cv-body).
+ */
+#tab-cv {
+  overflow: hidden;       /* don't scroll the whole tab */
+  padding: 0;             /* padding lives on cv-tabs / cv-body instead */
+  gap: 0;
+}
+
 .cv-tabs {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--bg);
-  overflow-x: auto;
+  flex-shrink: 0;         /* never compress the tab bar */
+  padding: 1rem 2rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;       /* horizontal scroll if tabs don't fit */
   -webkit-overflow-scrolling: touch;
   flex-wrap: nowrap !important;
-  padding-bottom: 4px;
-  margin-bottom: -4px;   /* cancel extra gap so content sits flush */
 }
 .cv-tab { white-space: nowrap; flex-shrink: 0; }
+
+/* Scrollable wrapper that holds all .cv-section divs */
+.cv-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
 
 /* ── Card header: wrap title + button on narrow cards ───── */
 .card-header { flex-wrap: wrap; gap: 0.5rem; }
@@ -1038,8 +1061,12 @@ textarea { resize: vertical; }
   .topbar-info { flex: 1; min-width: 0; overflow: hidden; }
   .topbar-title { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* Tab content */
+  /* Tab content (non-cv tabs) */
   .tab { padding: 1rem; gap: 1rem; }
+
+  /* CV Editor: tighter padding on mobile */
+  .cv-tabs { padding: 0.75rem 1rem 0.65rem; }
+  .cv-body  { padding: 0.75rem 1rem 1rem; gap: 0.75rem; }
 
   /* Stats rows: 2 columns */
   .stats-row,
