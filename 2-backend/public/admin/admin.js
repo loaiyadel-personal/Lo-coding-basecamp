@@ -122,6 +122,27 @@ $('#logoutBtn').addEventListener('click', () => {
   toast('Logged out', 'info');
 });
 
+/* ── Mobile sidebar toggle ──────────────────────────────── */
+const sidebarEl      = document.querySelector('.sidebar');
+const sidebarOverlay = $('#sidebarOverlay');
+const menuToggleBtn  = $('#menuToggle');
+
+function openSidebar() {
+  sidebarEl.classList.add('open');
+  sidebarOverlay.classList.add('visible');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  sidebarEl.classList.remove('open');
+  sidebarOverlay.classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+if (menuToggleBtn) menuToggleBtn.addEventListener('click', () => {
+  sidebarEl.classList.contains('open') ? closeSidebar() : openSidebar();
+});
+if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+
 /* ── Tab switching ──────────────────────────────────────── */
 const TAB_META = {
   messages:  { title: 'Messages',  sub: 'Contact form submissions' },
@@ -139,6 +160,8 @@ $$('.nav-item').forEach(btn => {
     $('#topbarTitle').textContent = TAB_META[tab].title;
     $('#topbarSub').textContent   = TAB_META[tab].sub;
     loadTab(tab);
+    // Close sidebar on mobile after navigation
+    if (window.innerWidth <= 768) closeSidebar();
   });
 });
 

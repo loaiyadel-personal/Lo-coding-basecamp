@@ -61,12 +61,18 @@
     </button>
   </aside>
 
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
   <!-- Main content -->
   <main class="main">
 
     <!-- Top bar -->
     <header class="topbar">
-      <div>
+      <button class="btn-menu" id="menuToggle" title="Menu" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="topbar-info">
         <h2 class="topbar-title" id="topbarTitle">Messages</h2>
         <p class="topbar-sub" id="topbarSub">Contact form submissions</p>
       </div>
