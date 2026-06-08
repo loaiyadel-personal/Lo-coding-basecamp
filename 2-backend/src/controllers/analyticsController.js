@@ -65,7 +65,9 @@ async function geoFromIP(ip) {
 const trackVisit = async (req, res, next) => {
   try {
     const { page, referrer, visitorId } = req.body;
-    const ip        = req.ip;
+    // X-Forwarded-For first entry is the real client IP behind Render's proxies
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip        = forwarded ? forwarded.split(',')[0].trim() : req.ip;
     const userAgent = req.headers['user-agent'] || '';
 
     // Deduplication — unique if not seen in last 24 h; first-visit if never seen at all
