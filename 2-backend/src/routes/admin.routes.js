@@ -6,7 +6,7 @@ const {
   getMessages, markRead, replyMessage, deleteMessage,
   updateCVItem, addCVItem, deleteCVItem,
 } = require('../controllers/adminController');
-const { getAnalytics } = require('../controllers/analyticsController');
+const { getAnalytics, deleteVisit } = require('../controllers/analyticsController');
 
 // Public routes — no auth needed
 router.post('/login',           login);
@@ -24,6 +24,7 @@ router.delete('/messages/:id',       deleteMessage);
 
 // Analytics
 router.get('/analytics',             getAnalytics);
+router.delete('/analytics/:id',      deleteVisit);
 
 // CV sections (full CRUD)
 router.post('/cv/:section',          addCVItem);

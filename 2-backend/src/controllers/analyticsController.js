@@ -259,4 +259,15 @@ const getAnalytics = async (req, res, next) => {
   }
 };
 
-module.exports = { trackVisit, getAnalytics };
+/* ── DELETE /api/admin/analytics/:id (protected) ─────────── */
+const deleteVisit = async (req, res, next) => {
+  try {
+    const result = await Visit.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ success: false, message: 'Visit not found' });
+    res.json({ success: true, message: 'Visit deleted' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { trackVisit, getAnalytics, deleteVisit };
