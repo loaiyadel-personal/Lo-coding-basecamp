@@ -327,14 +327,17 @@ async function loadAnalytics() {
     const { data } = await apiFetch('/admin/analytics');
     const {
       totalViews, uniqueVisitors, todayViews, todayUnique,
+      newVisitors, returningVisitors,
       visitsByDay, topReferrers, topCountries, deviceBreakdown, browserBreakdown, recentVisitors,
     } = data;
 
     $('#analyticsStats').innerHTML =
-      statCard('Total Page Views',   totalViews,     'accent') +
-      statCard('Unique Visitors',    uniqueVisitors, 'green')  +
-      statCard('Views Today',        todayViews,     'amber')  +
-      statCard('Unique Today',       todayUnique,    '');
+      statCard('Total Page Views',    totalViews,        'accent') +
+      statCard('Unique Visitors',     uniqueVisitors,    'green')  +
+      statCard('Views Today',         todayViews,        'amber')  +
+      statCard('Unique Today',        todayUnique,       '')       +
+      statCard('First-Time Visitors', newVisitors,       'green')  +
+      statCard('Returning Visitors',  returningVisitors, '');
 
     renderChart(visitsByDay);
     renderCountries(topCountries);
@@ -475,7 +478,7 @@ function renderRecentVisitors(data) {
       <td style="font-size:.82rem">${esc(v.browser||'—')} <span style="color:var(--text-muted)">/ ${esc(v.os||'—')}</span></td>
       <td>${ref}</td>
       <td style="font-family:monospace;font-size:.75rem;color:var(--text-muted)">${esc(ip)}</td>
-      <td><span class="pill ${v.isUnique ? 'pill-new' : 'pill-read'}">${v.isUnique ? 'New' : 'Return'}</span></td>
+      <td><span class="pill ${v.isFirstVisit === true || (v.isFirstVisit == null && v.isUnique) ? 'pill-new' : 'pill-read'}">${v.isFirstVisit === true ? 'First Visit' : v.isFirstVisit === false ? 'Returning' : (v.isUnique ? 'New' : 'Return')}</span></td>
     </tr>`;
   }).join('');
 }

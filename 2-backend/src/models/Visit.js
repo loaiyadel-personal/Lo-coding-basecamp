@@ -6,7 +6,8 @@ const VisitSchema = new mongoose.Schema({
   userAgent:   { type: String },
   referrer:    { type: String, default: '' },
   visitorId:   { type: String },   // stable UUID from visitor's localStorage
-  isUnique:    { type: Boolean, default: false }, // first visit in 24h window
+  isUnique:     { type: Boolean, default: false }, // first visit in 24h window
+  isFirstVisit: { type: Boolean },               // true only on first-ever visit from this visitor
   // ── Parsed from user-agent ─────────────────────────────
   device:      { type: String },   // desktop | mobile | tablet
   browser:     { type: String },   // Chrome | Firefox | Safari | Edge | …

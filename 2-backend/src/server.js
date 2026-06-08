@@ -18,6 +18,7 @@ connectDB();
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 const app = express();
+app.set('trust proxy', 1);  // Render / any reverse-proxy: use X-Forwarded-For for req.ip
 
 // ─── Static files (Admin Dashboard) ──────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '../public'), {

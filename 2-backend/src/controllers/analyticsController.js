@@ -68,16 +68,29 @@ const trackVisit = async (req, res, next) => {
     const ip        = req.ip;
     const userAgent = req.headers['user-agent'] || '';
 
-    // Deduplication — unique if not seen in last 24 h
+    // Deduplication — unique if not seen in last 24 h; first-visit if never seen at all
     const since = new Date(Date.now() - TWENTY_FOUR_HOURS);
-    let isUnique = true;
+    let isUnique     = true;
+    let isFirstVisit = true;
 
     if (visitorId) {
       const recent = await Visit.findOne({ visitorId, createdAt: { $gte: since } }).lean();
       isUnique = !recent;
+      if (recent) {
+        isFirstVisit = false; // visited in last 24h → definitely not first ever
+      } else {
+        const anyPrior = await Visit.findOne({ visitorId }).lean();
+        isFirstVisit = !anyPrior;
+      }
     } else {
       const recent = await Visit.findOne({ ip, createdAt: { $gte: since } }).lean();
       isUnique = !recent;
+      if (recent) {
+        isFirstVisit = false;
+      } else {
+        const anyPrior = await Visit.findOne({ ip }).lean();
+        isFirstVisit = !anyPrior;
+      }
     }
 
     // Parse UA synchronously
@@ -91,6 +104,7 @@ const trackVisit = async (req, res, next) => {
       referrer:  referrer || req.headers['referer'] || '',
       visitorId: visitorId || null,
       isUnique,
+      isFirstVisit,
       device,
       browser,
       os,
@@ -127,6 +141,8 @@ const getAnalytics = async (req, res, next) => {
       uniqueVisitors,
       todayViews,
       todayUnique,
+      newVisitors,
+      returningVisitors,
       visitsByDay,
       topReferrers,
       topCountries,
@@ -139,6 +155,8 @@ const getAnalytics = async (req, res, next) => {
       Visit.countDocuments({ isUnique: true }),
       Visit.countDocuments({ createdAt: { $gte: startOfToday } }),
       Visit.countDocuments({ createdAt: { $gte: startOfToday }, isUnique: true }),
+      Visit.countDocuments({ isFirstVisit: true }),
+      Visit.countDocuments({ isFirstVisit: false }),
 
       // Per-day chart (last 30 days)
       Visit.aggregate([
@@ -189,7 +207,7 @@ const getAnalytics = async (req, res, next) => {
       Visit.find()
         .sort({ createdAt: -1 })
         .limit(25)
-        .select('ip city country countryCode device browser os referrer isUnique createdAt')
+        .select('ip city country countryCode device browser os referrer isUnique isFirstVisit createdAt')
         .lean(),
     ]);
 
@@ -197,6 +215,7 @@ const getAnalytics = async (req, res, next) => {
       success: true,
       data: {
         totalViews, uniqueVisitors, todayViews, todayUnique,
+        newVisitors, returningVisitors,
         visitsByDay, topReferrers,
         topCountries, deviceBreakdown, browserBreakdown, recentVisitors,
       },
