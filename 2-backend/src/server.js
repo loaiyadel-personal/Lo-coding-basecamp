@@ -56,6 +56,16 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Tight limiter for password reset — 3 attempts per hour per IP
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,  // 1 hour
+  max: 3,
+  message: { success: false, message: 'Too many reset attempts — please try again in an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/admin/forgot-password', forgotPasswordLimiter);
+
 // ─── Body Parsing ─────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
