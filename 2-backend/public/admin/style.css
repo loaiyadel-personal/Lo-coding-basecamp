@@ -145,6 +145,31 @@ textarea { resize: vertical; }
   text-align: center;
 }
 
+.btn-forgot {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  margin-top: 0.25rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  width: 100%;
+  text-align: center;
+  transition: color 0.15s;
+}
+.btn-forgot:hover { color: var(--sky); }
+
+.forgot-msg {
+  font-size: 0.82rem;
+  min-height: 1.2em;
+  text-align: center;
+  margin-top: 0.25rem;
+}
+.forgot-msg.ok  { color: var(--green); }
+.forgot-msg.err { color: var(--red); }
+
 /* ── Spinner ────────────────────────────────────────────── */
 .spinner {
   width: 16px; height: 16px;

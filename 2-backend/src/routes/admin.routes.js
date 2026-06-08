@@ -2,14 +2,16 @@ const express  = require('express');
 const router   = express.Router();
 const { protect } = require('../middleware/auth');
 const {
-  login,
+  login, forgotPassword, resetPassword,
   getMessages, markRead, deleteMessage,
   updateCVItem, addCVItem, deleteCVItem,
 } = require('../controllers/adminController');
 const { getAnalytics } = require('../controllers/analyticsController');
 
-// Public — login
-router.post('/login', login);
+// Public routes — no auth needed
+router.post('/login',           login);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password',  resetPassword);
 
 // Everything below requires a valid JWT
 router.use(protect);

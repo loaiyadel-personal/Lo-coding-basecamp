@@ -27,6 +27,34 @@
         <span class="spinner" hidden></span>
       </button>
       <p class="login-error" id="loginError"></p>
+      <button type="button" class="btn-forgot" id="forgotBtn">Forgot password?</button>
+      <p class="forgot-msg" id="forgotMsg"></p>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════  RESET PASSWORD SCREEN  ══════════════ -->
+<div class="login-screen" id="resetScreen" hidden>
+  <div class="login-card">
+    <div class="login-brand">
+      <span class="brand-l">L</span><span class="brand-a">A</span>
+    </div>
+    <h1 class="login-title">Reset Password</h1>
+    <p class="login-sub">Set a new admin password</p>
+    <form class="login-form" id="resetForm" autocomplete="off">
+      <div class="field">
+        <label for="newPassword">New Password</label>
+        <input type="password" id="newPassword" placeholder="At least 8 characters" required minlength="8">
+      </div>
+      <div class="field">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" placeholder="Repeat new password" required minlength="8">
+      </div>
+      <button type="submit" class="btn-login" id="resetBtn">
+        <span class="btn-label">Set New Password</span>
+        <span class="spinner" hidden></span>
+      </button>
+      <p class="login-error" id="resetError"></p>
     </form>
   </div>
 </div>

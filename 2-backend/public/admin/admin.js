@@ -15,6 +15,12 @@ async function apiFetch(path, opts = {}) {
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
     ...opts,
   });
+  // Sliding session: store the refreshed 15-min token if server issued one
+  const refreshed = res.headers.get('X-Refresh-Token');
+  if (refreshed) {
+    TOKEN = refreshed;
+    localStorage.setItem('cv_admin_token', TOKEN);
+  }
   const json = await res.json();
   if (!res.ok) throw new Error(json.message || 'Request failed');
   return json;
@@ -77,18 +83,32 @@ function confirmDialog(message, label = 'Delete') {
 
 /* ── Auth ───────────────────────────────────────────────── */
 function init() {
+  // Check for password reset link: /admin/?reset=TOKEN
+  const resetToken = new URLSearchParams(window.location.search).get('reset');
+  if (resetToken) { showReset(resetToken); return; }
   TOKEN ? showDashboard() : showLogin();
 }
 
 function showLogin() {
   $('#loginScreen').hidden = false;
+  $('#resetScreen').hidden = true;
   $('#dashboard').hidden   = true;
 }
 
 function showDashboard() {
   $('#loginScreen').hidden = true;
+  $('#resetScreen').hidden = true;
   $('#dashboard').hidden   = false;
   loadTab('messages');
+}
+
+function showReset(token) {
+  $('#loginScreen').hidden = true;
+  $('#resetScreen').hidden = false;
+  $('#dashboard').hidden   = true;
+  $('#resetScreen').dataset.token = token;
+  // Clean the token out of the URL bar without reloading
+  history.replaceState({}, '', window.location.pathname);
 }
 
 $('#loginForm').addEventListener('submit', async (e) => {
@@ -120,6 +140,64 @@ $('#logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('cv_admin_token');
   showLogin();
   toast('Logged out', 'info');
+});
+
+/* ── Forgot password ────────────────────────────────────── */
+$('#forgotBtn').addEventListener('click', async () => {
+  const btn  = $('#forgotBtn');
+  const msg  = $('#forgotMsg');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  msg.textContent = '';
+  msg.className = 'forgot-msg';
+  try {
+    await fetch(API + '/admin/forgot-password', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' } });
+    msg.textContent = '✓ Reset link sent — check your email';
+    msg.className = 'forgot-msg ok';
+  } catch {
+    msg.textContent = '✗ Could not send reset email';
+    msg.className = 'forgot-msg err';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Forgot password?';
+  }
+});
+
+/* ── Reset password form ────────────────────────────────── */
+$('#resetForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn     = $('#resetBtn');
+  const label   = btn.querySelector('.btn-label');
+  const spin    = btn.querySelector('.spinner');
+  const errEl   = $('#resetError');
+  const newPwd  = $('#newPassword').value;
+  const confPwd = $('#confirmPassword').value;
+  errEl.textContent = '';
+
+  if (newPwd !== confPwd) {
+    errEl.textContent = '✗ Passwords do not match';
+    return;
+  }
+
+  btn.disabled = true; label.hidden = true; spin.hidden = false;
+  try {
+    const token = $('#resetScreen').dataset.token;
+    const res = await fetch(API + '/admin/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword: newPwd }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.message);
+    errEl.style.color = 'var(--green)';
+    errEl.textContent = '✓ Password updated! Redirecting to login…';
+    setTimeout(() => { showLogin(); errEl.textContent = ''; errEl.style.color = ''; }, 2000);
+  } catch (err) {
+    errEl.textContent = '✗ ' + err.message;
+  } finally {
+    btn.disabled = false; label.hidden = false; spin.hidden = true;
+  }
 });
 
 /* ── Mobile sidebar toggle ──────────────────────────────── */

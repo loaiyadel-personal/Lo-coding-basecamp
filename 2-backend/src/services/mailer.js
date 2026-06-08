@@ -403,4 +403,116 @@ async function sendAutoReply({ name, email, subject }) {
   console.log(`📧 Auto-reply sent to ${email}`);
 }
 
-module.exports = { sendNewMessageNotification, sendAutoReply };
+/* ═════════════════════════════════════════════════════════════════════════════
+   EMAIL 3 — Admin password reset
+   ═════════════════════════════════════════════════════════════════════════════ */
+async function sendPasswordResetEmail(resetToken) {
+  const client = getClient();
+  if (!client) {
+    console.warn('⚠️  RESEND_API_KEY not set — skipping reset email');
+    return;
+  }
+
+  const baseUrl  = process.env.BASE_URL || 'https://loaiy-cv-api.onrender.com';
+  const resetUrl = `${baseUrl}/admin/?reset=${resetToken}`;
+  const dateStr  = cairoTime();
+
+  const html = shell(`
+
+    <!-- ── Header ── -->
+    <tr><td style="background:#0c1a2e;border-radius:12px 12px 0 0;padding:28px 36px">
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+          <td>
+            <span style="display:inline-block;width:40px;height:40px;border-radius:10px;
+                         background:linear-gradient(135deg,#0272c0,#0ea5e9);
+                         text-align:center;line-height:40px;
+                         font-size:16px;font-weight:800;color:#fff;
+                         font-family:-apple-system,Arial,sans-serif;
+                         vertical-align:middle;margin-right:12px">LA</span>
+            <span style="color:#94a3b8;font-size:13px;vertical-align:middle">Loaiy Adel · Admin Dashboard</span>
+          </td>
+          <td align="right">
+            <span style="display:inline-block;background:rgba(245,158,11,0.15);
+                         color:#fbbf24;border:1px solid rgba(251,191,36,0.3);
+                         border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600">
+              🔐 Password Reset
+            </span>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+
+    <!-- ── Amber accent strip ── -->
+    <tr><td style="background:linear-gradient(90deg,#f59e0b,#fbbf24);height:3px"></td></tr>
+
+    <!-- ── Body ── -->
+    <tr><td style="background:#fff;padding:36px 36px 28px">
+      <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;
+                font-family:-apple-system,Arial,sans-serif">Reset your admin password</p>
+      <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.7;
+                font-family:-apple-system,Arial,sans-serif">
+        A password reset was requested for your CV Admin Dashboard.
+        Click the button below to set a new password. This link expires in <strong>30 minutes</strong>.
+      </p>
+
+      <!-- CTA button -->
+      <table cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:28px">
+        <tr>
+          <td style="border-radius:8px;background:#0272c0">
+            <a href="${resetUrl}"
+               style="display:inline-block;padding:15px 36px;font-size:15px;font-weight:700;
+                      color:#fff;text-decoration:none;border-radius:8px;
+                      font-family:-apple-system,Arial,sans-serif">
+              Reset Password →
+            </a>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin:0 0 8px;font-size:13px;color:#94a3b8;font-family:-apple-system,Arial,sans-serif">
+        Or copy and paste this link into your browser:
+      </p>
+      <p style="margin:0 0 28px;font-size:12px;color:#0272c0;word-break:break-all;
+                font-family:monospace">${resetUrl}</p>
+
+      <!-- Warning box -->
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+          <td style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px">
+            <p style="margin:0;font-size:13px;color:#92400e;line-height:1.6;
+                      font-family:-apple-system,Arial,sans-serif">
+              ⚠️ If you did not request a password reset, you can safely ignore this email.
+              Your password will not change.
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+
+    <!-- ── Footer ── -->
+    <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;
+                   border-radius:0 0 12px 12px;padding:18px 36px;text-align:center">
+      <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6;
+                font-family:-apple-system,Arial,sans-serif">
+        Requested at ${dateStr}<br>
+        <a href="${baseUrl}/admin" style="color:#0272c0;text-decoration:none">${baseUrl}/admin</a>
+      </p>
+    </td></tr>
+
+  `);
+
+  const adminEmail = process.env.ADMIN_EMAIL || NOTIFY_TO();
+  const { error } = await client.emails.send({
+    from:    `Loaiy Adel CV <${FROM_ADDR()}>`,
+    to:      [adminEmail],
+    subject: '🔐 Reset your CV Admin password',
+    html,
+    text: `Reset your admin password\n\nClick the link below (valid for 30 minutes):\n${resetUrl}\n\nIf you didn't request this, ignore this email.`,
+  });
+
+  if (error) throw new Error(`Resend reset email error: ${error.message}`);
+  console.log(`📧 Password reset email sent to ${adminEmail}`);
+}
+
+module.exports = { sendNewMessageNotification, sendAutoReply, sendPasswordResetEmail };
