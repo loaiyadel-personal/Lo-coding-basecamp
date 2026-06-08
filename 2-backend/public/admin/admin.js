@@ -261,6 +261,61 @@ $('#refreshBtn').addEventListener('click', () => {
 /* ══════════════════════════════════════════════════════════
    MESSAGES
    ══════════════════════════════════════════════════════════ */
+let _allMessages = [];
+let _msgFilter   = 'all';
+
+// Search + filter controls
+$('#msgSearch').addEventListener('input', () => renderMessages());
+$$('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _msgFilter = btn.dataset.filter;
+    renderMessages();
+  });
+});
+
+function renderMessages() {
+  const tbody = $('#messagesBody');
+  const query = ($('#msgSearch').value || '').toLowerCase().trim();
+
+  let msgs = _allMessages;
+  if (_msgFilter === 'unread') msgs = msgs.filter(m => !m.read);
+  if (_msgFilter === 'read')   msgs = msgs.filter(m =>  m.read);
+  if (query) msgs = msgs.filter(m =>
+    (m.name    || '').toLowerCase().includes(query) ||
+    (m.email   || '').toLowerCase().includes(query) ||
+    (m.subject || '').toLowerCase().includes(query)
+  );
+
+  if (!msgs.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty">${query || _msgFilter !== 'all' ? 'No messages match your search' : 'No messages yet'}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = msgs.map(m => `
+    <tr class="${m.read ? '' : 'unread'}" data-id="${m._id}">
+      <td><strong>${esc(m.name)}</strong></td>
+      <td><a href="mailto:${esc(m.email)}" style="color:var(--sky)">${esc(m.email)}</a></td>
+      <td>${esc(m.subject || '—')}</td>
+      <td style="white-space:nowrap;color:var(--text-muted)">${fmt(m.createdAt)}</td>
+      <td><span class="pill ${m.read ? 'pill-read' : 'pill-new'}">${m.read ? 'Read' : 'New'}</span></td>
+      <td>
+        <div class="actions">
+          <button class="btn-icon" title="View" onclick="viewMessage('${m._id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+          ${!m.read ? `<button class="btn-icon success" title="Mark as read" onclick="markRead('${m._id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>` : ''}
+          <button class="btn-icon danger" title="Delete" onclick="deleteMessage('${m._id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
 async function loadMessages() {
   const tbody = $('#messagesBody');
   tbody.innerHTML = '<tr><td colspan="6" class="empty">Loading…</td></tr>';
@@ -281,33 +336,8 @@ async function loadMessages() {
     if (unread > 0) { badge.textContent = unread; badge.hidden = false; }
     else badge.hidden = true;
 
-    if (!msgs.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty">No messages yet — submit the contact form on your CV to test</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = msgs.map(m => `
-      <tr class="${m.read ? '' : 'unread'}" data-id="${m._id}">
-        <td><strong>${esc(m.name)}</strong></td>
-        <td><a href="mailto:${esc(m.email)}" style="color:var(--sky)">${esc(m.email)}</a></td>
-        <td>${esc(m.subject || '—')}</td>
-        <td style="white-space:nowrap;color:var(--text-muted)">${fmt(m.createdAt)}</td>
-        <td><span class="pill ${m.read ? 'pill-read' : 'pill-new'}">${m.read ? 'Read' : 'New'}</span></td>
-        <td>
-          <div class="actions">
-            <button class="btn-icon" title="View" onclick="viewMessage('${m._id}')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-            ${!m.read ? `<button class="btn-icon success" title="Mark as read" onclick="markRead('${m._id}')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-            </button>` : ''}
-            <button class="btn-icon danger" title="Delete" onclick="deleteMessage('${m._id}')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-            </button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    _allMessages = msgs;
+    renderMessages();
 
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="6" class="empty">Error loading messages</td></tr>`;
