@@ -157,8 +157,11 @@ const getAnalytics = async (req, res, next) => {
       Visit.countDocuments({ isUnique: true }),
       Visit.countDocuments({ createdAt: { $gte: startOfToday } }),
       Visit.countDocuments({ createdAt: { $gte: startOfToday }, isUnique: true }),
-      Visit.countDocuments({ isFirstVisit: true }),
-      Visit.countDocuments({ isFirstVisit: false }),
+      // newVisitors: unique sessions that are first-ever visits
+      // returningVisitors: all other unique sessions (incl. old records without isFirstVisit)
+      // these two always add up to uniqueVisitors
+      Visit.countDocuments({ isUnique: true, isFirstVisit: true }),
+      Visit.countDocuments({ isUnique: true, isFirstVisit: { $ne: true } }),
 
       // Per-day chart (last 30 days)
       Visit.aggregate([
