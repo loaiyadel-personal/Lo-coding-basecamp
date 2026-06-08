@@ -696,18 +696,11 @@
       localStorage.setItem('cv_visitor_id', visitorId);
     }
 
-    // 2. Client-side dedup: only fire once per hour per tab session
-    const lastTrack = parseInt(localStorage.getItem('cv_last_track') || '0');
-    const ONE_HOUR  = 60 * 60 * 1000;
-    if (Date.now() - lastTrack < ONE_HOUR) return;
-
-    // 3. Send to backend (server does 24h dedup for unique-visitor counting)
+    // 2. Send to backend — server handles 24h dedup for unique-visitor counting
     fetch(`${API}/analytics/track`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ page: '/', referrer: document.referrer, visitorId }),
-    }).then(() => {
-      localStorage.setItem('cv_last_track', Date.now().toString());
     }).catch(() => { /* backend not running — silent fail */ });
   })();
 
