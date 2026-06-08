@@ -14,6 +14,8 @@ services:
       - key: JWT_SECRET
         sync: false          # set manually in Render dashboard
       - key: JWT_EXPIRES_IN
-        value: 7d
+        value: 15m
       - key: ADMIN_PASSWORD
         sync: false          # set manually in Render dashboard
+      - key: ADMIN_EMAIL
+        sync: false          # set manually in Render dashboard — email for password reset links
