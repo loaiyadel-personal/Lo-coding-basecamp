@@ -21,6 +21,11 @@ async function apiFetch(path, opts = {}) {
     TOKEN = refreshed;
     localStorage.setItem('cv_admin_token', TOKEN);
   }
+  // Session expired — auto-redirect to login from any call
+  if (res.status === 401) {
+    TOKEN = ''; localStorage.removeItem('cv_admin_token'); showLogin();
+    throw new Error('Session expired — please log in again');
+  }
   const json = await res.json();
   if (!res.ok) throw new Error(json.message || 'Request failed');
   return json;
