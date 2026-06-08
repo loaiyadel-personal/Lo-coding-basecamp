@@ -515,4 +515,92 @@ async function sendPasswordResetEmail(resetToken) {
   console.log(`📧 Password reset email sent to ${adminEmail}`);
 }
 
-module.exports = { sendNewMessageNotification, sendAutoReply, sendPasswordResetEmail };
+/* ═════════════════════════════════════════════════════════════════════════════
+   EMAIL 4 — Admin reply to a contact message
+   ═════════════════════════════════════════════════════════════════════════════ */
+async function sendMessageReply({ toName, toEmail, subject, replyBody }) {
+  const client = getClient();
+  if (!client) {
+    console.warn('⚠️  RESEND_API_KEY not set — skipping reply email');
+    return;
+  }
+
+  const firstName = (toName || '').split(' ')[0] || 'there';
+  const subj = subject || 'Re: Your message';
+
+  const html = shell(`
+
+    <!-- ── Header ── -->
+    <tr><td style="background:#0c1a2e;border-radius:12px 12px 0 0;padding:28px 36px">
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+          <td>
+            <span style="display:inline-block;width:40px;height:40px;border-radius:10px;
+                         background:linear-gradient(135deg,#0272c0,#0ea5e9);
+                         text-align:center;line-height:40px;
+                         font-size:16px;font-weight:800;color:#fff;
+                         font-family:-apple-system,Arial,sans-serif;
+                         vertical-align:middle;margin-right:12px">LA</span>
+            <span style="color:#94a3b8;font-size:13px;vertical-align:middle">Loaiy Adel</span>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+
+    <!-- ── Blue accent strip ── -->
+    <tr><td style="background:linear-gradient(90deg,#0272c0,#0ea5e9);height:3px"></td></tr>
+
+    <!-- ── Body ── -->
+    <tr><td style="background:#fff;padding:40px 36px">
+      <p style="margin:0 0 20px;font-size:16px;color:#1e293b;line-height:1.7;
+                font-family:-apple-system,Arial,sans-serif">
+        Hi <strong>${firstName}</strong>,
+      </p>
+      <div style="font-size:15px;color:#334155;line-height:1.8;white-space:pre-wrap;
+                  font-family:-apple-system,Arial,sans-serif">${replyBody.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+
+      <!-- Signature -->
+      <table cellpadding="0" cellspacing="0" role="presentation" style="margin-top:36px">
+        <tr>
+          <td style="padding-right:14px;vertical-align:top">
+            <div style="width:44px;height:44px;border-radius:50%;
+                        background:linear-gradient(135deg,#0c1a2e,#0272c0);
+                        text-align:center;line-height:44px;font-size:16px;
+                        font-weight:800;color:#fff;font-family:-apple-system,Arial,sans-serif">LA</div>
+          </td>
+          <td valign="top">
+            <p style="margin:0 0 2px;font-size:15px;font-weight:700;color:#0f172a;
+                      font-family:-apple-system,Arial,sans-serif">Loaiy Adel</p>
+            <p style="margin:0;font-size:13px;color:#64748b;
+                      font-family:-apple-system,Arial,sans-serif">
+              Senior Scrum Master &amp; Agile Coach
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+
+    <!-- ── Footer ── -->
+    <tr><td style="background:#0c1a2e;border-radius:0 0 12px 12px;padding:22px 36px">
+      <p style="margin:0;font-size:12px;color:#94a3b8;font-family:-apple-system,Arial,sans-serif">
+        <a href="https://www.linkedin.com/in/loaiy-adel/" style="color:#7dd3fc;text-decoration:none">LinkedIn</a>
+        &nbsp;·&nbsp; Cairo, Egypt
+      </p>
+    </td></tr>
+
+  `);
+
+  const { error } = await client.emails.send({
+    from:     `Loaiy Adel <${FROM_ADDR()}>`,
+    to:       [toEmail],
+    reply_to: process.env.ADMIN_EMAIL || NOTIFY_TO(),
+    subject:  subj,
+    html,
+    text: `Hi ${firstName},\n\n${replyBody}\n\n--\nLoaiy Adel\nSenior Scrum Master & Agile Coach\nCairo, Egypt`,
+  });
+
+  if (error) throw new Error(`Resend reply error: ${error.message}`);
+  console.log(`📧 Reply sent to ${toEmail}`);
+}
+
+module.exports = { sendNewMessageNotification, sendAutoReply, sendPasswordResetEmail, sendMessageReply };

@@ -8,6 +8,8 @@ const EducationSchema = new mongoose.Schema({
   endYear:     { type: Number },
   joint:       { type: Boolean, default: false },  // Joint program badge
   partner:     { type: String },                   // Partner institution name
+  logo:        { type: String, default: '' },      // Logo image URL
+  url:         { type: String, default: '' },      // Institution website URL
   order:       { type: Number, default: 0 },
 }, { timestamps: true });
 

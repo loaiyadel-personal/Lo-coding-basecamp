@@ -4,7 +4,12 @@ const { sendNewMessageNotification, sendAutoReply } = require('../services/maile
 // POST /api/contact
 const submitMessage = async (req, res, next) => {
   try {
-    const { name, email, subject, body } = req.body;
+    const { name, email, subject, body, _gotcha } = req.body;
+
+    // Honeypot: bots fill hidden fields, humans don't
+    if (_gotcha) {
+      return res.status(201).json({ success: true, message: 'Message received — thank you!' });
+    }
 
     // Basic validation
     if (!name || !email || !body) {

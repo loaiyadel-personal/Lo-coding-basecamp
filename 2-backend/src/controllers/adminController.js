@@ -2,7 +2,7 @@ const jwt           = require('jsonwebtoken');
 const bcrypt        = require('bcryptjs');
 const Message       = require('../models/Message');
 const AdminSettings = require('../models/AdminSettings');
-const { sendPasswordResetEmail } = require('../services/mailer');
+const { sendPasswordResetEmail, sendMessageReply } = require('../services/mailer');
 
 // Models map for dynamic CV section updates
 const modelMap = {
@@ -106,6 +106,28 @@ const markRead = async (req, res, next) => {
   }
 };
 
+// POST /api/admin/messages/:id/reply
+const replyMessage = async (req, res, next) => {
+  try {
+    const msg = await Message.findById(req.params.id).lean();
+    if (!msg) return res.status(404).json({ success: false, message: 'Message not found' });
+
+    const { subject, body } = req.body;
+    if (!body) return res.status(400).json({ success: false, message: 'Reply body is required' });
+
+    await sendMessageReply({
+      toName:    msg.name,
+      toEmail:   msg.email,
+      subject:   subject || `Re: ${msg.subject || 'Your message'}`,
+      replyBody: body,
+    });
+
+    res.json({ success: true, message: 'Reply sent' });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // DELETE /api/admin/messages/:id
 const deleteMessage = async (req, res, next) => {
   try {
@@ -177,6 +199,6 @@ const deleteCVItem = async (req, res, next) => {
 
 module.exports = {
   login, forgotPassword, resetPassword,
-  getMessages, markRead, deleteMessage,
+  getMessages, markRead, replyMessage, deleteMessage,
   updateCVItem, addCVItem, deleteCVItem,
 };

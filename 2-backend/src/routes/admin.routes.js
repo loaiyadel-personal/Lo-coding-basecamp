@@ -3,7 +3,7 @@ const router   = express.Router();
 const { protect } = require('../middleware/auth');
 const {
   login, forgotPassword, resetPassword,
-  getMessages, markRead, deleteMessage,
+  getMessages, markRead, replyMessage, deleteMessage,
   updateCVItem, addCVItem, deleteCVItem,
 } = require('../controllers/adminController');
 const { getAnalytics } = require('../controllers/analyticsController');
@@ -19,6 +19,7 @@ router.use(protect);
 // Messages
 router.get('/messages',              getMessages);
 router.patch('/messages/:id/read',   markRead);
+router.post('/messages/:id/reply',   replyMessage);
 router.delete('/messages/:id',       deleteMessage);
 
 // Analytics

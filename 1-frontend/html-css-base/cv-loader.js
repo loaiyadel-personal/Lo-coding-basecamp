@@ -256,6 +256,72 @@
     });
   }
 
+  /* ── Apply Education ─────────────────────────────────────────── */
+  function applyEducation(items) {
+    if (!items || !items.length) return;
+    const eduItems = document.querySelectorAll('.edu-item');
+
+    items.forEach((edu, i) => {
+      const el = eduItems[i];
+      if (!el) return;
+
+      const degreeEl = el.querySelector('.edu-degree');
+      if (degreeEl && edu.degree) degreeEl.textContent = edu.degree;
+
+      const schoolEl = el.querySelector('.edu-school');
+      if (schoolEl && edu.institution) schoolEl.textContent = edu.institution;
+
+      const periodEl = el.querySelector('.edu-period');
+      if (periodEl) {
+        const start  = edu.startYear || '';
+        const end    = edu.endYear   || '';
+        const loc    = edu.location  || '';
+        let period   = start && end ? `${start} — ${end}` : (start || end || '');
+        if (loc) period += (period ? ' · ' : '') + loc;
+        if (period) periodEl.textContent = period;
+      }
+
+      const jointEl = el.querySelector('.edu-joint');
+      if (jointEl) jointEl.hidden = !edu.joint;
+
+      // Only swap logo if DB has a URL — keep embedded base64 otherwise
+      if (edu.logo) {
+        const logoImg = el.querySelector('.edu-logo');
+        if (logoImg) logoImg.src = edu.logo;
+      }
+
+      if (edu.url) el.href = edu.url;
+    });
+  }
+
+  /* ── Apply Languages ──────────────────────────────────────────── */
+  function applyLanguages(items) {
+    if (!items || !items.length) return;
+    const langRows = document.querySelectorAll('.lang-row');
+
+    items.forEach((lang, i) => {
+      const row = langRows[i];
+      if (!row) return;
+
+      const nameEl = row.querySelector('.lang-name');
+      if (nameEl && lang.name) nameEl.textContent = lang.name;
+
+      const lvlEl = row.querySelector('.lang-lvl');
+      if (lvlEl && lang.level) lvlEl.textContent = lang.level;
+
+      const dotsEl = row.querySelector('.lang-dots');
+      if (dotsEl && lang.proficiency) {
+        const prof  = Math.min(5, Math.max(1, lang.proficiency));
+        const isNat = lang.level && /native/i.test(lang.level);
+        const cls   = isNat ? 'dot on nat' : 'dot on';
+        dotsEl.innerHTML = Array.from({ length: 5 }, (_, j) =>
+          `<div class="${j < prof ? cls : 'dot'}"></div>`
+        ).join('');
+        dotsEl.setAttribute('aria-label', `${lang.level || ''} — ${prof} of 5`);
+      }
+    });
+  }
+
   /* ── Apply Services ──────────────────────────────────────────── */
   function applyServices(services) {
     if (!services || !services.length) return;
@@ -296,6 +362,8 @@
       applyExperience(data.experience);
       applySkills(data.skills);
       applyCertifications(data.certifications);
+      applyEducation(data.education);
+      applyLanguages(data.languages);
       applyServices(data.services);
     } catch (e) {
       // Backend offline or request failed — static HTML remains, no error shown to visitor

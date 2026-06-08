@@ -818,6 +818,34 @@ textarea { resize: vertical; }
 }
 .btn-add:hover { background: rgba(2,114,192,0.2); }
 
+.btn-reply {
+  background: rgba(2,114,192,0.1);
+  border: 1px solid rgba(2,114,192,0.35);
+  border-radius: 7px;
+  color: var(--sky);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  transition: all 160ms ease;
+}
+.btn-reply:hover { background: rgba(2,114,192,0.2); }
+
+.btn-cancel-reply {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 160ms ease;
+}
+.btn-cancel-reply:hover { border-color: var(--text-muted); color: var(--text); }
+
 .save-status { font-size: 0.83rem; }
 .save-status.ok  { color: var(--green); }
 .save-status.err { color: var(--red);   }

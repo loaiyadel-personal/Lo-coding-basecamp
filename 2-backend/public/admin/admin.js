@@ -358,17 +358,51 @@ async function viewMessage(id) {
     const m = msgs.find(x => x._id === id);
     if (!m) return;
 
+    const replySubject = `Re: ${m.subject || 'Your message'}`;
+
     $('#modalTitle').textContent = `From ${m.name}`;
     $('#modalBody').innerHTML = `
       <div class="msg-field"><strong>From</strong><span>${esc(m.name)} — <a href="mailto:${esc(m.email)}" style="color:var(--sky)">${esc(m.email)}</a></span></div>
       <div class="msg-field"><strong>Subject</strong><span>${esc(m.subject || '(no subject)')}</span></div>
       <div class="msg-field"><strong>Received</strong><span>${fmt(m.createdAt)}</span></div>
       <div class="msg-field"><strong>Message</strong><p>${esc(m.body)}</p></div>
+      <div id="replySection" style="margin-top:1.25rem">
+        <button class="btn-reply" id="showReplyBtn" onclick="document.getElementById('replyForm').hidden=false;this.hidden=true">
+          ↩ Reply to ${esc(m.name.split(' ')[0])}
+        </button>
+        <div id="replyForm" hidden style="margin-top:.75rem;display:flex;flex-direction:column;gap:.6rem">
+          <div class="field"><label>Subject</label><input type="text" id="replySubject" value="${esc(replySubject)}"></div>
+          <div class="field"><label>Message</label><textarea id="replyBody" rows="6" placeholder="Type your reply…"></textarea></div>
+          <div style="display:flex;gap:.6rem">
+            <button class="btn-save" onclick="sendReply('${id}')">Send Reply</button>
+            <button class="btn-cancel-reply" onclick="document.getElementById('replyForm').hidden=true;document.getElementById('showReplyBtn').hidden=false">Cancel</button>
+          </div>
+        </div>
+      </div>
     `;
     $('#modalOverlay').hidden = false;
     if (!m.read) markRead(id, true);
   } catch (err) { toast('Could not load message', 'err'); }
 }
+
+window.sendReply = async function(id) {
+  const subject = $('#replySubject')?.value?.trim();
+  const body    = $('#replyBody')?.value?.trim();
+  if (!body) { toast('Reply body cannot be empty', 'err'); return; }
+  const btn = document.querySelector('#replyForm .btn-save');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  try {
+    await apiFetch(`/admin/messages/${id}/reply`, {
+      method: 'POST',
+      body: JSON.stringify({ subject, body }),
+    });
+    toast('Reply sent ✓', 'ok');
+    $('#modalOverlay').hidden = true;
+  } catch (err) {
+    toast(err.message, 'err');
+    if (btn) { btn.disabled = false; btn.textContent = 'Send Reply'; }
+  }
+};
 
 async function markRead(id, silent = false) {
   try {
@@ -1006,6 +1040,7 @@ function renderEduModal(item, id, section) {
       ${field('Degree / Qualification', 'degree', item.degree || '')}
       ${field('Institution', 'institution', item.institution || '')}
       ${field('Location (optional)', 'location', item.location || '')}
+      ${field('Institution Website URL (optional)', 'url', item.url || '')}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
         ${field('Start Year', 'startYear', item.startYear || '')}
         ${field('End Year (leave blank if ongoing)', 'endYear', item.endYear || '')}
@@ -1014,6 +1049,7 @@ function renderEduModal(item, id, section) {
         <input type="checkbox" name="joint" ${item.joint ? 'checked' : ''} style="width:auto;cursor:pointer"> Joint program
       </label>
       ${field('Partner Institution (if joint)', 'partner', item.partner || '')}
+      ${fieldIcon('Institution Logo URL (optional)', 'logo', item.logo || '')}
       ${field('Display Order (lower = higher)', 'order', item.order ?? 0)}
       <button type="submit" class="btn-save" style="align-self:flex-start">Save</button>
     </div>

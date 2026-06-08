@@ -650,6 +650,8 @@
         <textarea id="cf-body" name="body" rows="5" placeholder="Tell me about the opportunity…"></textarea>
         <span class="field-error" id="err-body" aria-live="polite"></span>
       </div>
+      <!-- Honeypot: hidden from real users, bots fill it in -->
+      <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
       <button type="submit" class="contact-btn" id="contactBtn">
         <span class="btn-label">Send Message</span>
         <span class="btn-spinner" aria-hidden="true" hidden></span>
@@ -780,10 +782,11 @@
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name:    form.elements['name'].value.trim(),
-          email:   form.elements['email'].value.trim(),
-          subject: form.elements['subject'].value.trim(),
-          body:    form.elements['body'].value.trim(),
+          name:     form.elements['name'].value.trim(),
+          email:    form.elements['email'].value.trim(),
+          subject:  form.elements['subject'].value.trim(),
+          body:     form.elements['body'].value.trim(),
+          _gotcha:  form.elements['_gotcha']?.value || '',
         }),
       });
       const json = await res.json();
