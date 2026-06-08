@@ -399,6 +399,34 @@ $('#modalOverlay').addEventListener('click', e => {
 let visitsChartInstance  = null;
 let deviceChartInstance  = null;
 let browserChartInstance = null;
+let _analyticsParams     = { days: 7 };  // default: last 7 days
+
+// Preset buttons
+$$('.range-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.range-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    $('#rangeFrom').value = '';
+    $('#rangeTo').value   = '';
+    const days = parseInt(btn.dataset.days, 10);
+    _analyticsParams = { days };
+    const label = days === 0 ? 'All Time' : `Last ${days} Days`;
+    $('#chartTitle').textContent = `Visits — ${label}`;
+    loadAnalytics();
+  });
+});
+
+// Custom date range
+$('#applyRange').addEventListener('click', () => {
+  const from = $('#rangeFrom').value;
+  const to   = $('#rangeTo').value;
+  if (!from && !to) return;
+  $$('.range-btn').forEach(b => b.classList.remove('active'));
+  _analyticsParams = { from, to };
+  const label = from && to ? `${from} → ${to}` : from ? `From ${from}` : `Until ${to}`;
+  $('#chartTitle').textContent = `Visits — ${label}`;
+  loadAnalytics();
+});
 
 const CHART_COLORS = ['#0272c0','#22c55e','#f59e0b','#a78bfa','#f87171','#38bdf8'];
 
@@ -432,7 +460,8 @@ async function loadAnalytics() {
   $('#analyticsStats').innerHTML =
     statCard('Loading…','—') + statCard('—','—') + statCard('—','—') + statCard('—','—');
   try {
-    const { data } = await apiFetch('/admin/analytics');
+    const params = new URLSearchParams(_analyticsParams).toString();
+    const { data } = await apiFetch(`/admin/analytics?${params}`);
     const {
       totalViews, uniqueVisitors, todayViews, todayUnique,
       newVisitors, returningVisitors,

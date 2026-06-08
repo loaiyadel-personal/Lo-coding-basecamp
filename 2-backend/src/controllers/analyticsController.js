@@ -134,9 +134,21 @@ const trackVisit = async (req, res, next) => {
 /* ── GET /api/admin/analytics (protected) ────────────────── */
 const getAnalytics = async (req, res, next) => {
   try {
-    const thirtyDaysAgo = new Date(Date.now() - THIRTY_DAYS_MS);
-    const startOfToday  = new Date();
+    // Date range: ?from=YYYY-MM-DD&to=YYYY-MM-DD  or  ?days=N  (default 30)
+    const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
+
+    let rangeStart;
+    if (req.query.from) {
+      rangeStart = new Date(req.query.from);
+    } else {
+      const days = parseInt(req.query.days, 10);
+      const ms   = days > 0 ? days * 24 * 60 * 60 * 1000 : null;
+      rangeStart = ms ? new Date(Date.now() - ms) : new Date(0);  // 0 = all time
+    }
+    const rangeEnd = req.query.to ? new Date(req.query.to + 'T23:59:59.999Z') : new Date();
+
+    const thirtyDaysAgo = rangeStart;  // alias used below
 
     const [
       totalViews,
@@ -153,19 +165,16 @@ const getAnalytics = async (req, res, next) => {
       recentVisitors,
     ] = await Promise.all([
 
-      Visit.countDocuments(),
-      Visit.countDocuments({ isUnique: true }),
+      Visit.countDocuments({ createdAt: { $gte: rangeStart, $lte: rangeEnd } }),
+      Visit.countDocuments({ createdAt: { $gte: rangeStart, $lte: rangeEnd }, isUnique: true }),
       Visit.countDocuments({ createdAt: { $gte: startOfToday } }),
       Visit.countDocuments({ createdAt: { $gte: startOfToday }, isUnique: true }),
-      // newVisitors: unique sessions that are first-ever visits
-      // returningVisitors: all other unique sessions (incl. old records without isFirstVisit)
-      // these two always add up to uniqueVisitors
-      Visit.countDocuments({ isUnique: true, isFirstVisit: true }),
-      Visit.countDocuments({ isUnique: true, isFirstVisit: { $ne: true } }),
+      Visit.countDocuments({ createdAt: { $gte: rangeStart, $lte: rangeEnd }, isUnique: true, isFirstVisit: true }),
+      Visit.countDocuments({ createdAt: { $gte: rangeStart, $lte: rangeEnd }, isUnique: true, isFirstVisit: { $ne: true } }),
 
-      // Per-day chart (last 30 days)
+      // Per-day chart
       Visit.aggregate([
-        { $match: { createdAt: { $gte: thirtyDaysAgo } } },
+        { $match: { createdAt: { $gte: thirtyDaysAgo, $lte: rangeEnd } } },
         { $group: {
             _id:    { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
             views:  { $sum: 1 },
@@ -176,7 +185,7 @@ const getAnalytics = async (req, res, next) => {
 
       // Top referrers
       Visit.aggregate([
-        { $match: { referrer: { $nin: ['', null] } } },
+        { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd }, referrer: { $nin: ['', null] } } },
         { $group: { _id: '$referrer', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 8 },
@@ -184,7 +193,7 @@ const getAnalytics = async (req, res, next) => {
 
       // Top locations (city + country)
       Visit.aggregate([
-        { $match: { country: { $nin: ['', null, 'Local'] } } },
+        { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd }, country: { $nin: ['', null, 'Local'] } } },
         { $addFields: {
             location: { $cond: {
               if:   { $and: [{ $ne: ['$city', ''] }, { $ne: ['$city', null] }] },
@@ -203,13 +212,13 @@ const getAnalytics = async (req, res, next) => {
 
       // Device breakdown
       Visit.aggregate([
-        { $match: { device: { $nin: ['', null] } } },
+        { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd }, device: { $nin: ['', null] } } },
         { $group: { _id: '$device', count: { $sum: 1 } } },
       ]),
 
       // Browser breakdown
       Visit.aggregate([
-        { $match: { browser: { $nin: ['', null] } } },
+        { $match: { createdAt: { $gte: rangeStart, $lte: rangeEnd }, browser: { $nin: ['', null] } } },
         { $group: { _id: '$browser', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 6 },
