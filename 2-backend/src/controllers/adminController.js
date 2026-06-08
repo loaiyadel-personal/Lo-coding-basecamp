@@ -14,6 +14,8 @@ const modelMap = {
   languages:      require('../models/Language'),
   services:       require('../models/Service'),
 };
+// Sections that support full CRUD via /api/admin/cv/:section
+const CRUD_SECTIONS = new Set(['experience','education','skills','certifications','languages','services']);
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 

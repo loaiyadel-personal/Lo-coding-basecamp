@@ -222,8 +222,10 @@
       <div class="cv-tabs">
         <button class="cv-tab active" data-section="profile">Profile</button>
         <button class="cv-tab" data-section="experience">Experience</button>
+        <button class="cv-tab" data-section="education">Education</button>
         <button class="cv-tab" data-section="skills">Skills</button>
         <button class="cv-tab" data-section="certifications">Certifications</button>
+        <button class="cv-tab" data-section="languages">Languages</button>
         <button class="cv-tab" data-section="services">Services</button>
       </div>
 
@@ -293,6 +295,17 @@
         </div>
       </div>
 
+      <!-- Education editor -->
+      <div class="cv-section" id="cv-education" hidden>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Education</h3>
+            <button class="btn-add" id="addEduBtn">+ Add Degree</button>
+          </div>
+          <div id="eduList" class="item-list"></div>
+        </div>
+      </div>
+
       <!-- Skills editor -->
       <div class="cv-section" id="cv-skills" hidden>
         <div class="card">
@@ -312,6 +325,17 @@
             <button class="btn-add" id="addCertBtn">+ Add Cert</button>
           </div>
           <div id="certList" class="item-list"></div>
+        </div>
+      </div>
+
+      <!-- Languages editor -->
+      <div class="cv-section" id="cv-languages" hidden>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Languages</h3>
+            <button class="btn-add" id="addLangBtn">+ Add Language</button>
+          </div>
+          <div id="langList" class="item-list"></div>
         </div>
       </div>
 

@@ -692,8 +692,10 @@ let _profileId = null;
 async function loadCV(section) {
   if (section === 'profile')        await loadProfile();
   if (section === 'experience')     await loadList('experience');
+  if (section === 'education')      await loadList('education');
   if (section === 'skills')         await loadList('skills');
   if (section === 'certifications') await loadList('certifications');
+  if (section === 'languages')      await loadList('languages');
   if (section === 'services')       await loadList('services');
 }
 
@@ -787,6 +789,11 @@ const SECTION_META = {
     sub:   e => `${e.startDate} — ${e.endDate}${e.isCurrent ? ' · Current' : ''}`,
     modal: renderExpModal,
   },
+  education: {
+    title: e => e.degree,
+    sub:   e => `${e.institution}${e.startYear ? ' · ' + e.startYear + (e.endYear ? '–' + e.endYear : '–present') : ''}`,
+    modal: renderEduModal,
+  },
   skills: {
     title: s => s.category,
     sub:   s => (s.items || []).join(', '),
@@ -797,6 +804,11 @@ const SECTION_META = {
     sub:   c => `${c.issuer}${c.issueDate ? ' · ' + c.issueDate : ''}`,
     modal: renderCertModal,
   },
+  languages: {
+    title: l => l.name,
+    sub:   l => `${l.level}${l.proficiency ? ' · ' + '●'.repeat(l.proficiency) + '○'.repeat(5 - l.proficiency) : ''}`,
+    modal: renderLangModal,
+  },
   services: {
     title: s => (s.active === false ? '[Hidden] ' : '') + s.title,
     sub:   s => s.description ? s.description.slice(0, 80) + (s.description.length > 80 ? '…' : '') : '',
@@ -805,7 +817,10 @@ const SECTION_META = {
 };
 
 function listElId(section) {
-  const map = { experience: 'expList', skills: 'skillList', certifications: 'certList', services: 'serviceList' };
+  const map = {
+    experience: 'expList', education: 'eduList', skills: 'skillList',
+    certifications: 'certList', languages: 'langList', services: 'serviceList',
+  };
   return map[section];
 }
 
@@ -920,6 +935,46 @@ function renderCertModal(item, id, section) {
   </form>`;
 }
 
+function renderEduModal(item, id, section) {
+  const saveCall = id ? `saveItem(event,'${section}','${id}')` : `addItem(event,'${section}')`;
+  return `<form onsubmit="${saveCall}">
+    <div style="display:flex;flex-direction:column;gap:.75rem">
+      ${field('Degree / Qualification', 'degree', item.degree || '')}
+      ${field('Institution', 'institution', item.institution || '')}
+      ${field('Location (optional)', 'location', item.location || '')}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        ${field('Start Year', 'startYear', item.startYear || '')}
+        ${field('End Year (leave blank if ongoing)', 'endYear', item.endYear || '')}
+      </div>
+      <label style="display:flex;align-items:center;gap:.5rem;color:var(--text-mid);font-size:.85rem;cursor:pointer">
+        <input type="checkbox" name="joint" ${item.joint ? 'checked' : ''} style="width:auto;cursor:pointer"> Joint program
+      </label>
+      ${field('Partner Institution (if joint)', 'partner', item.partner || '')}
+      ${field('Display Order (lower = higher)', 'order', item.order ?? 0)}
+      <button type="submit" class="btn-save" style="align-self:flex-start">Save</button>
+    </div>
+  </form>`;
+}
+
+function renderLangModal(item, id, section) {
+  const saveCall = id ? `saveItem(event,'${section}','${id}')` : `addItem(event,'${section}')`;
+  const prof = item.proficiency || 0;
+  return `<form onsubmit="${saveCall}">
+    <div style="display:flex;flex-direction:column;gap:.75rem">
+      ${field('Language', 'name', item.name || '')}
+      ${field('Level (e.g. Native, C2/Professional, B2/Upper-Intermediate)', 'level', item.level || '')}
+      <div class="field">
+        <label>Proficiency (1–5 dots shown on CV)</label>
+        <select name="proficiency" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:.55rem .75rem;color:var(--text);font-size:.9rem">
+          ${[1,2,3,4,5].map(n => `<option value="${n}" ${prof==n?'selected':''}>${n} ${'●'.repeat(n)}${'○'.repeat(5-n)}</option>`).join('')}
+        </select>
+      </div>
+      ${field('Display Order (lower = higher)', 'order', item.order ?? 0)}
+      <button type="submit" class="btn-save" style="align-self:flex-start">Save</button>
+    </div>
+  </form>`;
+}
+
 function renderServiceModal(item, id, section) {
   const saveCall = id ? `saveItem(event,'${section}','${id}')` : `addItem(event,'${section}')`;
   return `<form onsubmit="${saveCall}">
@@ -973,8 +1028,10 @@ window.saveItem = async function(e, section, id) {
 
 /* ── Add new items ──────────────────────────────────────── */
 $('#addExpBtn')?.addEventListener('click',     () => openAddModal('experience',     renderExpModal({},      null, 'experience')));
+$('#addEduBtn')?.addEventListener('click',     () => openAddModal('education',      renderEduModal({},     null, 'education')));
 $('#addSkillBtn')?.addEventListener('click',   () => openAddModal('skills',         renderSkillModal({},   null, 'skills')));
 $('#addCertBtn')?.addEventListener('click',    () => openAddModal('certifications', renderCertModal({},    null, 'certifications')));
+$('#addLangBtn')?.addEventListener('click',    () => openAddModal('languages',      renderLangModal({},    null, 'languages')));
 $('#addServiceBtn')?.addEventListener('click', () => openAddModal('services',       renderServiceModal({}, null, 'services')));
 
 function openAddModal(section, html) {
@@ -1005,6 +1062,13 @@ function formToBody(form, section) {
   else if (section === 'experience') body.isCurrent = false;
   if ('active' in body) body.active = true;
   else if (section === 'services')   body.active = false;
+  if ('joint' in body) body.joint = true;
+  else if (section === 'education')  body.joint = false;
+  // Coerce numeric fields
+  if (body.startYear)    body.startYear    = Number(body.startYear)    || undefined;
+  if (body.endYear)      body.endYear      = Number(body.endYear)      || undefined;
+  if (body.proficiency)  body.proficiency  = Number(body.proficiency)  || undefined;
+  if (body.order !== undefined) body.order = Number(body.order) || 0;
   return body;
 }
 
