@@ -179,11 +179,18 @@ const getAnalytics = async (req, res, next) => {
         { $limit: 8 },
       ]),
 
-      // Top countries
+      // Top locations (city + country)
       Visit.aggregate([
         { $match: { country: { $nin: ['', null, 'Local'] } } },
+        { $addFields: {
+            location: { $cond: {
+              if:   { $and: [{ $ne: ['$city', ''] }, { $ne: ['$city', null] }] },
+              then: { $concat: ['$city', ', ', '$country'] },
+              else: '$country',
+            }},
+        }},
         { $group: {
-            _id:         '$country',
+            _id:         '$location',
             countryCode: { $first: '$countryCode' },
             count:       { $sum: 1 },
         }},
